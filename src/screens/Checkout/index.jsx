@@ -1,12 +1,110 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const Checkout = () => {
-  const [quantity, setQuantity] = useState(1);
-  const pricePerItem = 2525;
+  const [cartItems, setCartItems] = useState([]);
+  const [user, setUser] = useState({});
+  const [subtotal, setSubtotal] = useState(0);
+  const [totalShipping, setTotalShipping] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState("Credit / Debit Card");
 
-  const subtotal = quantity * pricePerItem;
-  const shipping = 100; // example static shipping
-  const total = subtotal + shipping;
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+
+    const token = localStorage.getItem("token");
+    axios
+      .get("https://mitdevelop.com/goudhan/admin/api/cart", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        const cartData = res.data.cart || [];
+        setCartItems(cartData);
+
+        let sub = 0;
+        let shipping = 0;
+        cartData.forEach((item) => {
+          sub += parseFloat(item.total_price);
+          shipping += parseFloat(item.product.shipping_charge || 0);
+        });
+
+        setSubtotal(sub);
+        setTotalShipping(shipping);
+        setTotal(sub + shipping);
+      })
+      .catch((err) => console.error("Error fetching cart:", err));
+  }, []);
+
+  // Load Razorpay script dynamically
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (document.getElementById("razorpay-script")) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.id = "razorpay-script";
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePlaceOrder = async () => {
+    if (paymentMethod !== "Credit / Debit Card") {
+      alert("Only Credit / Debit Card payment method is implemented currently.");
+      return;
+    }
+
+    const res = await loadRazorpayScript();
+
+    if (!res) {
+      alert("Failed to load Razorpay SDK. Please check your connection.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      // Call your Laravel API to create Razorpay order
+      const orderResponse = await axios.post(
+        "https://mitdevelop.com/goudhan/admin/api/payment/create-order",
+        { amount: total },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const { order_id, amount, currency, key } = orderResponse.data;
+
+      const options = {
+        key: key,
+        amount: amount,
+        currency: currency,
+        name: "Goudhan",
+        description: "Order Payment",
+        order_id: order_id,
+        handler: function (response) {
+          // On successful payment capture, you can verify payment here or send response to your backend
+          alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+          // TODO: Call your backend to verify and finalize order if needed
+        },
+        prefill: {
+          name: user.name,
+          email: user.email,
+          contact: user.phone_number,
+        },
+        theme: {
+          color: "#f68540",
+        },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (error) {
+      console.error("Order creation failed", error);
+      alert("Failed to initiate payment. Please try again.");
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto p-6 grid md:grid-cols-3 gap-8">
@@ -14,26 +112,43 @@ const Checkout = () => {
       <div className="col-span-2">
         <h2 className="text-2xl font-semibold mb-4">Billing Information</h2>
         <form className="space-y-4">
-          <input
-            type="text"
-            placeholder="Full Name"
-            className="w-full border rounded p-2"
-          />
-          <input
-            type="email"
-            placeholder="Email Address"
-            className="w-full border rounded p-2"
-          />
-          <input
-            type="text"
-            placeholder="Phone Number"
-            className="w-full border rounded p-2"
-          />
-          <textarea
-            placeholder="Shipping Address"
-            rows="4"
-            className="w-full border rounded p-2"
-          />
+          {/* ...same billing info form... */}
+          <div>
+            <label className="block text-gray-500 text-sm mb-1">Full Name</label>
+            <input
+              type="text"
+              className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
+              value={user.name || ""}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block text-gray-500 text-sm mb-1">Email Address</label>
+            <input
+              type="email"
+              className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
+              value={user.email || ""}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block text-gray-500 text-sm mb-1">Phone Number</label>
+            <input
+              type="text"
+              className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
+              value={user.phone_number || ""}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block text-gray-500 text-sm mb-1">Shipping Address</label>
+            <textarea
+              rows="4"
+              className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
+              value={user.address || ""}
+              readOnly
+            />
+          </div>
         </form>
       </div>
 
@@ -41,62 +156,47 @@ const Checkout = () => {
       <div>
         <h2 className="text-2xl font-semibold mb-4">Order Summary</h2>
         <div className="border p-4 rounded shadow-md space-y-4 bg-white">
-          {/* Product Info */}
-          <div className="flex items-center gap-4">
-            <img
-              src="https://mitdevelop.com/goudhan/uploads/products/1715160613.png"
-              alt="Product"
-              className="w-20 h-20 object-cover border"
-            />
-            <div>
-              <h3 className="font-semibold">A2 Whole Gir Cow Milk Powder (100g)</h3>
-              <p>Price: ₹{pricePerItem.toLocaleString()}</p>
-              <div className="flex items-center mt-2">
-                <button
-                  className="px-2 border"
-                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                >
-                  -
-                </button>
-                <span className="px-4">{quantity}</span>
-                <button
-                  className="px-2 border"
-                  onClick={() => setQuantity(q => q + 1)}
-                >
-                  +
-                </button>
+          {/* ...same order summary... */}
+          {cartItems.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-4 border-b pb-4 mb-4"
+            >
+              
+              <div className="flex-1">
+                <h3 className="font-semibold">{item.product.name}</h3>
+                <p>Price: ₹{(item.total_price / item.quantity).toFixed(2)}</p>
+                <p>Quantity: {item.quantity}</p>
+                <p>Delivery Method: {item.delivery_method}</p>
+                <p>
+                  Shipping Charge: ₹
+                  {parseFloat(item.product.shipping_charge).toFixed(2)}
+                </p>
               </div>
             </div>
-          </div>
+          ))}
 
-          {/* Pricing Details */}
           <div className="border-t pt-4">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span>₹{subtotal.toLocaleString()}</span>
+              <span>₹{subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>Shipping</span>
-              <span>₹{shipping.toLocaleString()}</span>
+              <span>₹{totalShipping.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold text-lg mt-2">
               <span>Total</span>
-              <span>₹{total.toLocaleString()}</span>
+              <span>₹{total.toFixed(2)}</span>
             </div>
           </div>
 
-          {/* Payment Method Placeholder */}
-          <div className="mt-4">
-            <label className="block font-medium mb-2">Payment Method</label>
-            <select className="w-full border p-2 rounded">
-              <option>Credit / Debit Card</option>
-              <option>UPI</option>
-              <option>Cash on Delivery</option>
-            </select>
-          </div>
+          
 
-          {/* Checkout Button */}
-          <button className="w-full bg-[#f68540] text-white py-2 rounded mt-4">
+          <button
+            onClick={handlePlaceOrder}
+            className="w-full bg-[#f68540] text-white py-2 rounded mt-4"
+          >
             Place Order
           </button>
         </div>

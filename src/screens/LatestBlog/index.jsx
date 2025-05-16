@@ -4,11 +4,11 @@ const LatestBlog = () => {
   const [blogs, setBlogs] = useState([]);
 
   useEffect(() => {
-    fetch('https://mitdevelop.com/goudhan/api/blogs/latest')
+    fetch('https://mitdevelop.com/goudhan/admin/api/blogs')  // <-- correct API endpoint
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          setBlogs(data.blogs);
+          setBlogs(data.data);  // <-- data is inside `data` key in response
         }
       })
       .catch((err) => console.error('Error fetching blogs:', err));
@@ -28,7 +28,7 @@ const LatestBlog = () => {
             <div key={blog.id}>
               <div className='border-1 border-[#292929] p-4 hover:bg-[#fff9f5] duration-200'>
                 <img
-                  src={`https://mitdevelop.com/goudhan/public/storage/blogs/${blog.image.split('/').pop()}`}
+                  src={`https://mitdevelop.com/goudhan/admin/public/uploads/blogs/${blog.image}`}  // <-- fixed image URL
                   alt={blog.title}
                   className='w-full h-60 object-cover'
                 />

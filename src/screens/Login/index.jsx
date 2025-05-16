@@ -4,7 +4,7 @@ import login from '../../assets/login.png';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const [mode, setMode] = useState('email'); // 'email' or 'mobile'
+  const [mode, setMode] = useState('email');
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [mobileCredentials, setMobileCredentials] = useState({ phone: '', otp: '' });
   const [otpSent, setOtpSent] = useState(false);
@@ -18,48 +18,38 @@ const Login = () => {
     setter({ ...values, [e.target.name]: e.target.value });
   };
 
-const handleLogin = async () => {
-  setError('');
-  setLoading(true);
-  try {
-    const data = mode === 'email' ? credentials : mobileCredentials;
-    const endpoint =
-      mode === 'email'
-        ? 'https://mitdevelop.com/goudhan/admin/api/login'
-        : 'https://mitdevelop.com/goudhan/admin/api/verify-otp';
-
-    const payload =
-      mode === 'email'
+  const handleLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const payload = mode === 'email'
         ? { email: credentials.email, password: credentials.password }
         : { phone_number: mobileCredentials.phone, otp: mobileCredentials.otp };
 
-    const response = await axios.post(endpoint, payload);
+      const endpoint = mode === 'email'
+        ? 'https://mitdevelop.com/goudhan/admin/api/login'
+        : 'https://mitdevelop.com/goudhan/admin/api/verify-otp';
 
-    if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      const response = await axios.post(endpoint, payload);
 
-      const userRoleId = response.data.user?.role_id;
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token); 
+        localStorage.setItem("user", JSON.stringify(response.data.user));
 
-      // Check if the user is a seller
-      if (userRoleId === 2) {
-        navigate('/Seller');
+        const userRoleId = response.data.user?.role_id;
+        navigate(userRoleId === 2 ? '/Seller' : '/dashboard');
+
       } else {
-        navigate('/dashboard');
+        setError(response.data.message || 'Login failed');
       }
-    } else {
-      setError(response.data.message || 'Login failed');
+    } catch (err) {
+      setError(err.response?.data?.message || (err.response?.status === 401 ? 'Invalid credentials' : 'Server error.'));
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError(
-      err.response?.data?.message ||
-      (err.response?.status === 401 ? 'Invalid credentials' : 'Server error. Please try again later.')
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
+ 
 
   const sendOtp = async () => {
     setError('');
@@ -68,6 +58,7 @@ const handleLogin = async () => {
       const response = await axios.post('https://mitdevelop.com/goudhan/admin/api/send-otp', {
         phone_number: mobileCredentials.phone,
       });
+
       if (response.status === 200) {
         setOtpSent(true);
         setError('');
@@ -94,19 +85,13 @@ const handleLogin = async () => {
             {/* Toggle Buttons */}
             <div className="flex bg-[#f4864314] p-3 rounded-full mt-6 mb-6 overflow-hidden w-fit">
               <button
-                onClick={() => {
-                  setMode('email');
-                  setError('');
-                }}
+                onClick={() => { setMode('email'); setError(''); }}
                 className={`px-6 py-2 rounded-full font-semibold ${mode === 'email' ? 'bg-[#F48643] text-white' : 'text-[#292929]'}`}
               >
                 Email Login
               </button>
               <button
-                onClick={() => {
-                  setMode('mobile');
-                  setError('');
-                }}
+                onClick={() => { setMode('mobile'); setError(''); }}
                 className={`px-6 py-2 rounded-full font-semibold ${mode === 'mobile' ? 'bg-[#F48643] text-white' : 'text-[#292929]'}`}
               >
                 Mobile Login
@@ -118,71 +103,20 @@ const handleLogin = async () => {
             {/* Conditional Inputs */}
             {mode === 'email' ? (
               <>
-                <input
-                  name="email"
-                  value={credentials.email}
-                  onChange={handleChange}
-                  className="border-b border-[#000000] text-[#000000] mb-6 block w-full p-2.5 placeholder-[#000000] focus-visible:outline-none"
-                  placeholder="Enter email"
-                  type="email"
-                />
-                <input
-                  name="password"
-                  value={credentials.password}
-                  onChange={handleChange}
-                  className="border-b border-[#000000] text-[#000000] block w-full p-2.5 placeholder-[#000000] focus-visible:outline-none"
-                  placeholder="Enter password"
-                  type="password"
-                />
+                <input name="email" value={credentials.email} onChange={handleChange} className="border-b border-[#000000] text-[#000000] mb-6 block w-full p-2.5 placeholder-[#000000] focus-visible:outline-none" placeholder="Enter email" type="email" />
+                <input name="password" value={credentials.password} onChange={handleChange} className="border-b border-[#000000] text-[#000000] block w-full p-2.5 placeholder-[#000000] focus-visible:outline-none" placeholder="Enter password" type="password" />
               </>
             ) : (
               <>
-                <input
-                  name="phone"
-                  value={mobileCredentials.phone}
-                  onChange={handleChange}
-                  className="border-b border-[#000000] text-[#000000] mb-6 block w-full p-2.5 placeholder-[#000000] focus-visible:outline-none"
-                  placeholder="Enter mobile number"
-                  type="text"
-                />
-                {otpSent && (
-                  <input
-                    name="otp"
-                    value={mobileCredentials.otp}
-                    onChange={handleChange}
-                    className="border-b border-[#000000] text-[#000000] block w-full p-2.5 placeholder-[#000000] focus-visible:outline-none"
-                    placeholder="Enter OTP"
-                    type="text"
-                  />
-                )}
-                {!otpSent ? (
-                  <button
-                    type="button"
-                    onClick={sendOtp}
-                    className='bg-[#F48643] py-3 w-full text-white mt-10 hover:bg-[#4D953E] duration-200 hover:scale-95'
-                    disabled={loading}
-                  >
-                    {loading ? 'Sending OTP...' : 'Send OTP'}
-                  </button>
-                ) : null}
+                <input name="phone" value={mobileCredentials.phone} onChange={handleChange} className="border-b border-[#000000] text-[#000000] mb-6 block w-full p-2.5 placeholder-[#000000] focus-visible:outline-none" placeholder="Enter mobile number" type="text" />
+                {otpSent && <input name="otp" value={mobileCredentials.otp} onChange={handleChange} className="border-b border-[#000000] text-[#000000] block w-full p-2.5 placeholder-[#000000] focus-visible:outline-none" placeholder="Enter OTP" type="text" />}
+                {!otpSent ? <button type="button" onClick={sendOtp} className='bg-[#F48643] py-3 w-full text-white mt-10 hover:bg-[#4D953E] duration-200 hover:scale-95' disabled={loading}>{loading ? 'Sending OTP...' : 'Send OTP'}</button> : null}
               </>
             )}
 
-            {mode === 'email' || otpSent ? (
-              <button
-                type="button"
-                onClick={handleLogin}
-                className='bg-[#F48643] py-3 w-full text-white mt-10 hover:bg-[#4D953E] duration-200 hover:scale-95'
-                disabled={loading}
-              >
-                {loading ? 'Logging in...' : 'Login'}
-              </button>
-            ) : null}
+            {(mode === 'email' || otpSent) && <button type="button" onClick={handleLogin} className='bg-[#F48643] py-3 w-full text-white mt-10 hover:bg-[#4D953E] duration-200 hover:scale-95' disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>}
 
-            <p className="mt-4 text-[#292929]">
-              If you're a New User, Please Register first!{' '}
-              <span className="text-[#F48643] font-semibold"><Link to="/SignUp">Sign Up</Link></span>
-            </p>
+            <p className="mt-4 text-[#292929]">If you're a New User, Please Register first! <span className="text-[#F48643] font-semibold"><Link to="/SignUp">Sign Up</Link></span></p>
           </div>
         </div>
       </div>

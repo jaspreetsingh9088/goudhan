@@ -32,23 +32,27 @@ const TopProducts = () => {
           {products.map((product) => (
             <Link to={`/product/${product.slug}`} key={product.id}>
               <div className='relative'>
-                <img src={heart} className='absolute right-3 top-2' alt='Favorite' />
+                <img src={heart} className='absolute right-3 z-10 top-2' alt='Favorite' />
               </div>
-              <div className='border-1 p-5 border-[#e3e3e3] hover:border-[#F48643] duration-300'>
-                <img
-                  src={`https://mitdevelop.com//goudhan/admin/storage/app/public/products/${product.image.split('/').pop()}`}
-                  alt={product.name}
-                  className="w-[72%] block m-auto"
-                />
+              <div className='border p-5 border-[#e3e3e3] hover:border-[#f48743a1] hover:shadow-xl hover:bg-[#fffaf7] hover:scale-105 duration-300'>
+                {product.images && product.images.length > 0 && (
+                  <img
+                    src={`https://mitdevelop.com/goudhan/admin/public/storage/${product.images[0].image_path}`}
+                    alt={product.name}
+                    className="w-[82%] block m-auto"
+                  />
+                )}
                 <div className='bg-[#fff8f3] px-4 py-4 mt-3'>
                   <h4 className='text-[20px] mb-2 font-medium'>{product.name}</h4>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2'> 
-                      <p className='font-regular text-[18px]'>₹{product.price}</p>
-                      <p className='font-regular text-[#F48643] text-[18px]'><del>₹399.00</del></p>
+                      <p className='font-regular text-[18px]'>₹{product.selling_price}</p>
+                      <p className='font-regular text-[#F48643] text-[18px]'>
+                        <del>₹{product.marked_price}</del>
+                      </p>
                     </div>
                     <div className='flex items-center gap-1'>
-                      <img src={cart} alt='Add to Cart' title='Add to Cart' className='hover:scale-150 duration-200' />
+                      <img src={cart} alt='Add to Cart' title='Add to Cart' className='hover:scale-150 duration-200 cursor-pointer' />
                       <p>Cart</p>
                     </div>
                   </div>

@@ -12,9 +12,10 @@ const SignUp = () => {
     address: '',
     password: '',
     password_confirmation: '',
-    role: 'user', // default role
-    shop_name: '', // seller-specific
-    buyer_type: '', // buyer-specific
+    role: 'user', 
+    shop_name: '', 
+    pincode: '',
+    buyer_type: '', 
     agree: false
   });
 
@@ -85,7 +86,7 @@ const handleSubmit = async () => {
                     onChange={handleChange}
                     className="block w-full appearance-none border border-gray-300 rounded-xl bg-white px-4 py-2 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition duration-150"
                   >
-                    <option value="user">Normal User</option>
+                    <option value="user">Bussiness Associate</option>
                     <option value="buyer">Buyer</option>
                     <option value="seller">Seller</option>
                   </select>
@@ -102,7 +103,7 @@ const handleSubmit = async () => {
             <div className='grid grid-cols-1 xl:grid-cols-2 gap-5'>
               <input id="name" placeholder="Name" value={formData.name} onChange={handleChange} className="border-b p-2" />
               <input id="phone_number" placeholder="Phone Number" value={formData.phone_number} onChange={handleChange} className="border-b p-2" />
-              <input id="email" placeholder="Email" value={formData.email} onChange={handleChange} className="border-b p-2" />
+              <input id="email" placeholder="Email(Optional)" value={formData.email} onChange={handleChange} className="border-b p-2" />
               <input id="address" placeholder="Address" value={formData.address} onChange={handleChange} className="border-b p-2" />
               <input id="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} className="border-b p-2" />
               <input id="password_confirmation" type="password" placeholder="Confirm Password" value={formData.password_confirmation} onChange={handleChange} className="border-b p-2" />
@@ -110,9 +111,14 @@ const handleSubmit = async () => {
 
             {/* Conditional Fields */}
             {formData.role === 'seller' && (
+              <>
               <div className="mt-4">
                 <input id="shop_name" placeholder="Shop Name" value={formData.shop_name} onChange={handleChange} className="border-b p-2 w-full" />
               </div>
+              <div className="mt-4">
+                <input id="pincode" placeholder="Pin Code" value={formData.pincode} onChange={handleChange} className="border-b p-2 w-full" />
+              </div>
+              </>
             )}
 
             {formData.role === 'buyer' && (

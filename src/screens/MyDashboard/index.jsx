@@ -13,6 +13,7 @@ const MyDashboard = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       const token = localStorage.getItem('token'); // Get token from local storage
+        console.error('toekn data:', token);
 
       if (!token) {
         console.log('No token found. Please log in.');
@@ -21,7 +22,7 @@ const MyDashboard = () => {
       }
 
       try {
-        const response = await axios.get('https://mitdevelop.com/goudhan/api/user', {
+        const response = await axios.get('https://mitdevelop.com/goudhan/admin/api/user', {
           headers: {
             'Authorization': `Bearer ${token}`, // Attach token in Authorization header
             'Accept': 'application/json',
@@ -39,37 +40,40 @@ const MyDashboard = () => {
     fetchUserData();
   }, []); // Empty dependency array to run this once when component mounts
 
-  const handleLogout = async () => {
-    const token = localStorage.getItem('token');
+const handleLogout = async () => {
+  const token = localStorage.getItem('token');
 
-    if (!token) {
-      console.log('No token found. Already logged out.');
-      localStorage.clear(); // Clear everything
-      window.location.href = '/login';
-      return;
-    }
+  if (!token) {
+    console.log('No token found. Already logged out.');
+    // Remove only token and user keys, not entire localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+    return;
+  }
 
-    try {
-      const response = await axios.post(
-        'https://mitdevelop.com/goudhan/admin/api/logout',
-        {}, // No body
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
-        }
-      );
+  try {
+    const response = await axios.post(
+      'https://mitdevelop.com/goudhan/admin/api/logout',
+      {}, // No body
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      }
+    );
 
-      console.log('Logout success:', response.data);
-    } catch (error) {
-      console.error('Logout error:', error.response?.data || error.message);
-    } finally {
-      // Clear all local storage data and redirect
-      localStorage.clear();
-      window.location.href = '/login';
-    }
-  };
+    console.log('Logout success:', response.data);
+  } catch (error) {
+    console.error('Logout error:', error.response?.data || error.message);
+  } finally {
+    // Remove only token and user keys, not entire localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  }
+};
 
   const renderContent = () => {
     switch (activeTab) {

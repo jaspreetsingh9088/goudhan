@@ -1,6 +1,7 @@
 import React from 'react'
 import ourstosry from '../../assets/ourstosry.png';
 import milk from '../../assets/milk.png';
+import { Link } from 'react-router-dom';
 
 const OurStory = () => {
   return (
@@ -15,7 +16,7 @@ const OurStory = () => {
             <p className='text-[#F48643] text-[18px] mb-3'>Our Story</p>
             <h2 className=' text-[#292929] text-[42px] font-bold leading-[48px]'>We are like minded group of people</h2>
             <p className=' text-[#292929] mt-4'>Committed to bring total prosperity, love and peace in the society by <br></br>the art of serving and spreading awareness.</p>
-            <button className='w-[30%] bg-[#F48643] p-3 mt-8 text-white rounded-[100px]'>Read More</button>
+            <Link to="/AboutUs"><button className='w-[30%] bg-[#F48643] p-3 mt-8 text-white rounded-[100px]'>Read More</button></Link>
             </div>
             </div>
             <div className='relative'>
