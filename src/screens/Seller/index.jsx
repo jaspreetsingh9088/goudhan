@@ -3,32 +3,53 @@ import { useNavigate } from "react-router-dom";
 import gaushalabg from "../../assets/gaushalabg.jpg";
 import myprofile from "../../assets/myprofile.png";
 import profile from "../../assets/profile.jpg";
+import Swal from 'sweetalert2'; // Add this at the top
 
 export default function SellerDashboard() {
-  const [activeTab, setActiveTab] = useState("Seller Products");
+  const [activeTab, setActiveTab] = useState("My Products");
   const [authUser, setAuthUser] = useState(null);
   const navigate = useNavigate();
+const [myProducts, setMyProducts] = useState([]);
+const [totalProducts, setTotalProducts] = useState(0);
 
   const [categories, setCategories] = useState([]);
 const [subcategories, setSubcategories] = useState([]);
+
+
 useEffect(() => {
-  fetch("https://mitdevelop.com/goudhan/admin/api/products")
-    .then((res) => res.json())
-    .then((data) => {
-      setCategories(data.categories || []);
-      setSubcategories(data.subCategories || []);
-    })
-    .catch((error) => console.error("Error fetching categories:", error));
-}, []);
+  const fetchMyProducts = async () => {
+    if (activeTab !== "My Products") return;
 
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch("https://mitdevelop.com/goudhan/admin/api/seller-products", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
 
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      setAuthUser(JSON.parse(user));
+      const data = await response.json();
+
+      if (response.ok) {
+        const products = data.products || [];
+        setMyProducts(products);
+        setTotalProducts(products.length);
+
+      } else {
+        console.error("Failed to fetch seller products:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching seller products:", error);
     }
-  }, []);
+  };
 
+  fetchMyProducts();
+}, [activeTab]);
+
+
+
+  
   const handleLogout = async () => {
     const token = localStorage.getItem("token");
 
@@ -52,7 +73,9 @@ useEffect(() => {
       console.error("Logout error:", err);
     }
   };
+   
 const [form, setForm] = React.useState({
+  
   category_id: "",
   subcategory_id: "",
   name: "",
@@ -61,68 +84,168 @@ const [form, setForm] = React.useState({
   shipping_charge: "",
   selling_price: "",
   quantity: "",
-  go_points: "",
+  // go_points: "",
   manufacturer: "",
   tax_detail: "",
   cgst: "",
   sgst: "",
   description: "",
-  status: "active",
+  status: "inactive",
+  images: null,
+  user_id: "", // Added user_id
 });
 
+useEffect(() => {
+  const user = localStorage.getItem("user");
+  if (user) {
+    const parsedUser = JSON.parse(user);
+    setAuthUser(parsedUser);
+    setForm((prev) => ({
+      ...prev,
+      user_id: parsedUser.id,
+    }));
+  }
+}, []);
+
+
 const handleChange = (e) => {
-  const { name, value } = e.target;
-  setForm((prev) => ({
-    ...prev,
-    [name]: value,
-  }));
+  const { name, value, type, files } = e.target;
+
+  if (type === "file") {
+    setForm((prev) => ({
+      ...prev,
+      [name]: files[0], // Store the single file in form state
+    }));
+  } else {
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
 };
+
+
 
 const handleSubmit = async (e) => {
   e.preventDefault();
   const token = localStorage.getItem("token");
 
   try {
-    const response = await fetch("https://mitdevelop.com/goudhan/api/create", {
+    const formData = new FormData();
+
+    // Append all form fields to formData
+    for (const key in form) {
+      if (!form.hasOwnProperty(key)) continue;
+
+      const value = form[key];
+
+      // Handle file (image) upload
+      if (key === "images" && value) {
+        formData.append("images", value); // only one image
+      } else {
+        formData.append(key, value);
+      }
+    }
+
+    const response = await fetch("https://mitdevelop.com/goudhan/admin/api/create", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
-        "Content-Type": "application/json",
+        // Do NOT manually set 'Content-Type' for FormData
       },
-      body: JSON.stringify(form),
+      body: formData,
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      alert("Product created successfully!");
+ 
+       Swal.fire({
+        title: 'Success!',
+        text: 'Product created successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+      // Reset the form state
       setForm({
         category_id: "",
         subcategory_id: "",
         name: "",
         marked_price: "",
-        discount: "",
-        shipping_charge: "",
-        selling_price: "",
+        // discount: "",
+        // shipping_charge: "",
+        // selling_price: "",
         quantity: "",
-        go_points: "",
+        // go_points: "",
         manufacturer: "",
         tax_detail: "",
         cgst: "",
         sgst: "",
         description: "",
-        status: "active",
+        status: "inactive",
+        images: null,
       });
+
+      // Optional: Switch tab after success
+      setActiveTab("My Products");
     } else {
-      alert("Failed to create product: " + (data.message || "Unknown error"));
+      Swal.fire({
+        title: 'Failed!',
+        text: data.message || 'Failed to create product. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
       console.error("API Error:", data);
     }
   } catch (error) {
     console.error("Submission failed:", error);
-    alert("Something went wrong. Check console for details.");
+    Swal.fire({
+      title: 'Error!',
+      text: 'Something went wrong. Check console for details.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
   }
 };
+
+
+useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  fetch("https://mitdevelop.com/goudhan/admin/api/seller-categories", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        setCategories(data.categories || []);
+      } else {
+        console.error("Failed to fetch seller's assigned categories");
+      }
+    })
+    .catch((error) =>
+      console.error("Error fetching seller's categories:", error)
+    );
+}, []);
+useEffect(() => {
+  if (form.category_id) {
+    const selectedCategory = categories.find(
+      (cat) => cat.id.toString() === form.category_id.toString()
+    );
+    if (selectedCategory) {
+      setSubcategories(selectedCategory.subcategories || []);
+    } else {
+      setSubcategories([]);
+    }
+  } else {
+    setSubcategories([]);
+  }
+}, [form.category_id, categories]);
+
 
 
   return (
@@ -140,13 +263,13 @@ const handleSubmit = async (e) => {
                   <p className="text-gray-500 text-[18px]">{authUser?.description || "Seller"}</p>
                   <div className="text-sm mt-3 flex gap-10 bg-[#4d953e0d] px-5 py-2 rounded-lg">
                     <div>
-                      <p className="mb-2"><span className="font-semibold text-[#292929] text-[20px] ">Location:</span></p>
-                      <div className="flex items-center gap-1">
+                      {/* <p className="mb-2"><span className="font-semibold text-[#292929] text-[20px] ">Location:</span></p> */}
+                      {/* <div className="flex items-center gap-1">
                         <svg className="w-6 h-6 text-[#4D953E]" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
                           <path fillRule="evenodd" d="M11.906 1.994a8.002 8.002 0 0 1 8.09 8.421 7.996 7.996 0 0 1-1.297 3.957c-.1.13-.186.27-.267.41l-.108.129a16.83 16.83 0 0 1-.573.699l-5.112 6.224a1 1 0 0 1-1.545 0L5.982 15.26a17.187 17.187 0 0 1-.442-.545 7.995 7.995 0 0 1 6.498-12.518ZM15 9.997a3 3 0 1 1-5.999 0 3 3 0 0 1 5.999 0Z" clipRule="evenodd" />
                         </svg>
                         <p className="text-[#4D953E]">{authUser?.location || "Illinois, USA"}</p>
-                      </div>
+                      </div> */}
                     </div>
                     <div>
                       <p className="mb-2"><span className="font-semibold text-[#292929] text-[20px] ">Joined:</span></p>
@@ -154,16 +277,24 @@ const handleSubmit = async (e) => {
                         <svg fill="#4D953E" width="24px" viewBox="0 0 512 512">
                           <path d="M377.181,376.303c-13.165,0.002-25.489-3.685-35.988-10.081c-10.499,6.396-22.823,10.083-35.99,10.083c-21.56,0-40.852-9.886-53.588-25.362l-57.617,15.698v-66.733l41.823-17.4l39.991-16.638c18.352-7.635,27.039-28.702,19.405-47.054c-7.635-18.352-28.702-27.039-47.054-19.405l-108.865,45.292c-22.133,9.208-36.555,30.827-36.555,54.8v57.282c0,85.722,69.492,155.214,155.214,155.214c82.493,0,149.944-64.358,154.909-145.603C402.433,372.681,390.224,376.303,377.181,376.303z"/>
                         </svg>
-                        <p className="text-[#4D953E]">{authUser?.joined_date || "15 May 2025"}</p>
+<p className="text-[#4D953E]">
+  {authUser?.created_at
+    ? new Date(authUser.created_at).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      })
+    : "15 May 2025"}
+</p>
                       </div>
                     </div>
                     <div>
                       <p className="mb-2"><span className="font-semibold text-[#292929] text-[20px] ">Total Product:</span></p>
                       <div className="flex items-center gap-1">
-                        <svg className="w-5 h-5 text-[#4D953E]" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        {/* <svg className="w-5 h-5 text-[#4D953E]" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M6 7V6a6 6 0 1 1 12 0v1h1a1 1 0 0 1 1 1v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a1 1 0 0 1 1-1h1zm2 0h8V6a4 4 0 1 0-8 0v1z"/>
-                        </svg>
-                        <p className="text-[#4D953E]">{authUser?.total_products || 0}</p>
+                        </svg> */}
+                        <p className="text-[#4D953E]">{totalProducts}</p>
                       </div>
                     </div>
                   </div>
@@ -188,23 +319,26 @@ const handleSubmit = async (e) => {
 <div className="bg-[#fff] p-5 mt-10">
   <div className="border-b border-gray-200">
     <div className="flex gap-6">
-      {["Seller Products", "My Products", "Extra Info"].map(tab => (
+      {["My Products", "Create Products", "Extra Info"].map(tab => (
         <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 ${activeTab === tab ? "text-[#f48643] font-semibold border-b-2 border-[#f48643]" : "text-gray-500"}`}>
           {tab}
         </button>
       ))}
     </div>
   </div>
+ 
+
+ 
 
   {/* Tab Content */}
   <div className="mt-6">
-    {activeTab === "Seller Products" && (
+    {activeTab === "Create Products" && (
       <div>
  <p>Display seller's product list here.</p>
 
     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
   <div>
-    <label className="block text-gray-700 font-medium mb-1">Category ID</label>
+    <label className="block text-gray-700 font-medium mb-1">Category</label>
    <select
   name="category_id"
   value={form.category_id}
@@ -221,7 +355,7 @@ const handleSubmit = async (e) => {
   </div>
 
   <div>
-    <label className="block text-gray-700 font-medium mb-1">Subcategory ID</label>
+    <label className="block text-gray-700 font-medium mb-1">Subcategory</label>
    <select
   name="subcategory_id"
   value={form.subcategory_id}
@@ -250,7 +384,7 @@ const handleSubmit = async (e) => {
   </div>
 
   <div>
-    <label className="block text-gray-700 font-medium mb-1">Marked Price</label>
+    <label className="block text-gray-700 font-medium mb-1">Price for Goudhan</label>
     <input
       type="number"
       name="marked_price"
@@ -260,7 +394,7 @@ const handleSubmit = async (e) => {
     />
   </div>
 
-  <div>
+  {/* <div>
     <label className="block text-gray-700 font-medium mb-1">Discount</label>
     <input
       type="number"
@@ -291,7 +425,7 @@ const handleSubmit = async (e) => {
       onChange={handleChange}
       className="w-full border border-gray-300 rounded px-4 py-2"
     />
-  </div>
+  </div> */}
 
   <div>
     <label className="block text-gray-700 font-medium mb-1">Quantity</label>
@@ -304,7 +438,7 @@ const handleSubmit = async (e) => {
     />
   </div>
 
-  <div>
+  {/* <div>
     <label className="block text-gray-700 font-medium mb-1">Go Points</label>
     <input
       type="number"
@@ -313,7 +447,7 @@ const handleSubmit = async (e) => {
       onChange={handleChange}
       className="w-full border border-gray-300 rounded px-4 py-2"
     />
-  </div>
+  </div> */}
 
   <div>
     <label className="block text-gray-700 font-medium mb-1">Manufacturer</label>
@@ -326,16 +460,7 @@ const handleSubmit = async (e) => {
     />
   </div>
 
-  <div>
-    <label className="block text-gray-700 font-medium mb-1">Tax Detail</label>
-    <input
-      type="text"
-      name="tax_detail"
-      value={form.tax_detail}
-      onChange={handleChange}
-      className="w-full border border-gray-300 rounded px-4 py-2"
-    />
-  </div>
+  
 
   <div>
     <label className="block text-gray-700 font-medium mb-1">CGST</label>
@@ -358,7 +483,16 @@ const handleSubmit = async (e) => {
       className="w-full border border-gray-300 rounded px-4 py-2"
     />
   </div>
-
+<div>
+    <label className="block text-gray-700 font-medium mb-1">Tax Detail</label>
+    <input
+      type="text"
+      name="tax_detail"
+      value={form.tax_detail}
+      onChange={handleChange}
+      className="w-full border border-gray-300 rounded px-4 py-2"
+    />
+  </div>
   <div className="md:col-span-2">
     <label className="block text-gray-700 font-medium mb-1">Description</label>
     <textarea
@@ -370,9 +504,9 @@ const handleSubmit = async (e) => {
     ></textarea>
   </div>
 
-  <div>
-    <label className="block text-gray-700 font-medium mb-1">Status</label>
-    <select
+  {/* <div> */}
+    {/* <label className="block text-gray-700 font-medium mb-1">Status</label> */}
+    {/* <select
       name="status"
       value={form.status}
       onChange={handleChange}
@@ -380,8 +514,21 @@ const handleSubmit = async (e) => {
     >
       <option value="active">Active</option>
       <option value="inactive">Inactive</option>
-    </select>
-  </div>
+    </select> */}
+  {/* </div> */}
+
+
+<div>
+  <label className="block text-gray-700 font-medium mb-1">Product Image</label>
+ <input
+  type="file"
+  name="images"
+  accept="image/*"
+  onChange={handleChange}
+/>
+
+</div>
+
 
   <div className="md:col-span-2 flex justify-end">
     <button
@@ -395,12 +542,26 @@ const handleSubmit = async (e) => {
 
       </div>
     )}
-    {activeTab === "My Products" && (
-      <div>
-        <h2 className="text-xl font-semibold mb-2">My Products</h2>
-        <p>Show products specifically uploaded by this seller.</p>
-      </div>
-    )}
+{activeTab === "My Products" && (
+  <div className="mt-6">
+    <h2 className="text-xl font-bold mb-4">My Products</h2>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {myProducts.map((product) => (
+        <div key={product.id} className="p-4 border rounded shadow">
+         <img
+  src={product.images && product.images.length > 0 ? product.images[0] : '/default.jpg'}
+  alt={product.name}
+  className="w-full h-40 object-cover rounded"
+/>
+
+          <h3 className="font-semibold mt-2">{product.name}</h3>
+          <p className="text-sm text-gray-600">{product.price} ₹</p>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
     {activeTab === "Extra Info" && (
       <div>
         <h2 className="text-xl font-semibold mb-2">Additional Information</h2>

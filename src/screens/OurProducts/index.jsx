@@ -199,7 +199,7 @@ const OurProducts = () => {
                           <div className='flex mt-2 items-center justify-between'>
                             <div className='flex items-center gap-2'>
                               <p className='text-[18px]'>₹{product.price}</p>
-                              <p className='text-[#F48643] text-[18px]'><del>₹399.00</del></p>
+                              <p className='text-[#F48643] text-[18px]'><del>₹{product.mprice}</del></p>
                             </div>
                             <div className='flex items-center gap-1'>
                               <img

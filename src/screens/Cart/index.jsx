@@ -1,4 +1,3 @@
-// Same imports as before
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -9,6 +8,8 @@ const AddToCart = () => {
   const [cartTotal, setCartTotal] = useState(0);
 
   const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user'));
+  const userId = user?.id;
 
   const fetchCart = () => {
     axios.get('https://mitdevelop.com/goudhan/admin/api/cart', {
@@ -18,8 +19,8 @@ const AddToCart = () => {
       },
     })
     .then(response => {
-      setCartItems(response.data.cart);
-      setCartTotal(response.data.cart_total);
+      setCartItems(response.data.cart || []);
+      setCartTotal(response.data.cart_total || 0);
     })
     .catch(error => {
       console.error("Error fetching cart data:", error);
@@ -31,7 +32,7 @@ const AddToCart = () => {
   }, []);
 
   const updateQuantity = (productId, quantity) => {
-    axios.put(`https://mitdevelop.com/goudhan/admin/api/cart/update/${productId}`, 
+    axios.put(`https://mitdevelop.com/goudhan/admin/api/cart/update/${productId}`,
       { quantity },
       {
         headers: {
@@ -39,14 +40,12 @@ const AddToCart = () => {
           Accept: 'application/json',
         },
       }
-    ).then(fetchCart)
-     .catch(error => console.error("Error updating quantity:", error));
+    )
+    .then(() => fetchCart())
+    .catch(error => console.error("Error updating quantity:", error));
   };
 
   const removeFromCart = async (productId) => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    const userId = user?.id;
-
     try {
       const response = await fetch(`https://mitdevelop.com/goudhan/admin/api/cart/${userId}/${productId}`, {
         method: 'post',
@@ -91,9 +90,9 @@ const AddToCart = () => {
   };
 
   const handleProceedToCheckout = () => {
-  localStorage.setItem("checkout_cart_items", JSON.stringify(cartItems));
-  localStorage.setItem("checkout_cart_total", JSON.stringify(cartTotal));
-};
+    localStorage.setItem("checkout_cart_items", JSON.stringify(cartItems));
+    localStorage.setItem("checkout_cart_total", JSON.stringify(cartTotal));
+  };
 
   return (
     <>
@@ -111,6 +110,7 @@ const AddToCart = () => {
       <div className="bg-[#fff8f4]">
         <div className="max-w-7xl mx-auto px-6 py-10">
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
+            {/* CART TABLE */}
             <div className="col-span-3 overflow-x-auto">
               <table className="min-w-full bg-white text-left">
                 <thead>
@@ -171,40 +171,25 @@ const AddToCart = () => {
                         <td className="py-3 px-5">₹{total.toFixed(2)}</td>
                         <td className="py-3 px-5 text-sm">
                           <div className="space-y-1">
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name={`delivery_${item.product.id}`}
-                                value="online"
-                              checked={(item.delivery_method || 'online') === 'online'}
-                                onChange={() => updateDeliveryMethod(item.product.id, 'online')}
-                              />
-                              Online
-                            </label>
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name={`delivery_${item.product.id}`}
-                                value="nearest_store"
-                                checked={item.delivery_method === 'nearest_store'}
-                                onChange={() => updateDeliveryMethod(item.product.id, 'nearest_store')}
-                              />
-                              Nearest Store
-                            </label>
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name={`delivery_${item.product.id}`}
-                                value="referral"
-                                checked={item.delivery_method === 'referral'}
-                                onChange={() => updateDeliveryMethod(item.product.id, 'referral')}
-                              />
-                              From Referral
-                            </label>
+                            {['online', 'nearest_store', 'referral'].map(method => (
+                              <label key={method} className="flex items-center gap-2">
+                                <input
+                                  type="radio"
+                                  name={`delivery_${item.product.id}`}
+                                  value={method}
+                                  checked={(item.delivery_method || 'online') === method}
+                                  onChange={() => updateDeliveryMethod(item.product.id, method)}
+                                />
+                                {method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              </label>
+                            ))}
                           </div>
                         </td>
                         <td className="py-3 px-5">
-                          <button onClick={() => removeFromCart(item.product.id)} style={{ color: 'red', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button
+                            onClick={() => removeFromCart(item.product.id)}
+                            className="text-red-600 flex items-center gap-1"
+                          >
                             <FaTrashAlt />
                             Remove
                           </button>
@@ -216,6 +201,7 @@ const AddToCart = () => {
               </table>
             </div>
 
+            {/* CART TOTAL & ACTIONS */}
             <div className="col-span-1 bg-white shadow-lg p-4">
               <h2 className="text-xl font-semibold text-[#000000] mb-3">Cart Total</h2>
               <div className="mb-3">
@@ -229,29 +215,28 @@ const AddToCart = () => {
                 </div>
               </div>
 
-             <Link to="/Checkout" onClick={() => handleProceedToCheckout()}>
-          <button className="w-full bg-[#e0e0e0] text-[#575555] py-1 flex items-center justify-center gap-2 transition">
-            Proceed to checkout <span className="text-lg">➔</span>
-          </button>
-        </Link>
+              <Link to="/Checkout" onClick={handleProceedToCheckout}>
+                <button className="w-full bg-[#e0e0e0] text-[#575555] py-2 mt-1 flex items-center justify-center gap-2 transition">
+                  Proceed to checkout <span className="text-lg">➔</span>
+                </button>
+              </Link>
 
-              <button className="w-full mt-2 text-[#4d953e] py-1 flex items-center justify-center gap-2 hover:bg-[#4c953e17] transition">
-                ← Return to shopping
-              </button>
-              <div className="mt-3">
+              <Link to="/products">
+                <button className="w-full mt-2 text-[#4d953e] py-2 flex items-center justify-center gap-2 hover:bg-[#4c953e17] transition">
+                  ← Return to shopping
+                </button>
+              </Link>
+
+              {/* Optional Coupon Input */}
+              <div className="mt-4">
                 <h3 className="text-[#4d953e] font-semibold mb-2">Coupon Apply</h3>
                 <input
                   type="text"
                   placeholder="Coupon Code"
-                  className="w-full border px-2 py-1 mb-2 focus:outline-none placeholder:text-[12px]"
+                  className="w-full border p-2 rounded"
                 />
-                <button className="w-full bg-[#4d953e] text-white py-1 mt-2 hover:bg-[#4c953ece] transition">Apply</button>
               </div>
             </div>
-          </div>
-
-          <div className="mt-6 text-right">
-            <p className="text-xl font-semibold">Grand Total: ₹{cartTotal.toFixed(2)}</p>
           </div>
         </div>
       </div>

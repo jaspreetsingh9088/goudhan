@@ -48,7 +48,7 @@ const TopProducts = () => {
                     <div className='flex items-center gap-2'> 
                       <p className='font-regular text-[18px]'>₹{product.selling_price}</p>
                       <p className='font-regular text-[#F48643] text-[18px]'>
-                        <del>₹{product.marked_price}</del>
+                        <del>₹{product.admin_mrp_price}</del>
                       </p>
                     </div>
                     <div className='flex items-center gap-1'>

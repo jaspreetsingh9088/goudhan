@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import login from '../../assets/login.png';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2'; // Add this at the top
+
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -9,27 +11,55 @@ const SignUp = () => {
     name: '',
     phone_number: '',
     email: '',
-    address: '',
     password: '',
     password_confirmation: '',
     role: 'user', 
+    role_id: '',
     shop_name: '', 
     pincode: '',
     buyer_type: '', 
     agree: false
   });
 
-  const handleChange = (e) => {
-    const { id, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [id]: type === 'checkbox' ? checked : value
-    });
+const handleChange = (e) => {
+  const { id, value, type, checked } = e.target;
+
+  let updatedData = {
+    ...formData,
+    [id]: type === 'checkbox' ? checked : value
   };
 
-const handleSubmit = async () => {
+  if (id === 'role') {
+    const roleMap = {
+      user: 3,   // Business Associate
+      buyer: 1,
+      seller: 2
+    };
+    updatedData.role_id = roleMap[value];
+    console.log("Role changed:", value, "-> role_id:", roleMap[value]); // Debugging log
+  }
+
+  setFormData(updatedData);
+};
+
+ const handleSubmit = async () => {
   if (!formData.agree) {
-    alert("You must agree to the privacy policy.");
+    Swal.fire({
+      title: 'Agreement Required',
+      text: 'You must agree to the privacy policy.',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  if (formData.password !== formData.password_confirmation) {
+    Swal.fire({
+      title: 'Password Mismatch',
+      text: 'Password and Confirm Password do not match.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
     return;
   }
 
@@ -45,22 +75,39 @@ const handleSubmit = async () => {
     console.log("Registration successful:", response.data);
 
     const { token } = response.data;
-
-    // Save token and set it for future requests
     localStorage.setItem('token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
+    Swal.fire({
+      title: 'Success!',
+      text: 'Registration completed successfully.',
+      icon: 'success',
+      confirmButtonText: 'Go to Login'
+    }).then(() => {
+      navigate('/login');
+    });
 
-    navigate('/dashboard');
   } catch (error) {
+    let errorMessage = 'Registration failed. Please try again.';
     if (error.response?.data?.errors) {
       const messages = Object.values(error.response.data.errors).flat();
-      alert(messages.join('\n'));
+      errorMessage = messages.join('\n');
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
     } else {
-      alert('Registration failed: ' + (error.response?.data?.message || error.message));
+      errorMessage = error.message;
     }
+
+    Swal.fire({
+      title: 'Error!',
+      text: errorMessage,
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
   }
 };
+
+
 
 
   return (
@@ -101,12 +148,17 @@ const handleSubmit = async () => {
 
             {/* Common Fields */}
             <div className='grid grid-cols-1 xl:grid-cols-2 gap-5'>
-              <input id="name" placeholder="Name" value={formData.name} onChange={handleChange} className="border-b p-2" />
-              <input id="phone_number" placeholder="Phone Number" value={formData.phone_number} onChange={handleChange} className="border-b p-2" />
-              <input id="email" placeholder="Email(Optional)" value={formData.email} onChange={handleChange} className="border-b p-2" />
-              <input id="address" placeholder="Address" value={formData.address} onChange={handleChange} className="border-b p-2" />
-              <input id="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} className="border-b p-2" />
-              <input id="password_confirmation" type="password" placeholder="Confirm Password" value={formData.password_confirmation} onChange={handleChange} className="border-b p-2" />
+              <div><input id="name" placeholder="Name" value={formData.name} onChange={handleChange} className="border-b p-2 w-full" />
+</div>
+              <div><input id="phone_number" placeholder="Phone Number" value={formData.phone_number} onChange={handleChange} className="border-b p-2 w-full" />
+</div>
+              <div className='col-span-3'><input id="email" placeholder="Email(Optional)" value={formData.email} onChange={handleChange} className="border-b p-2 w-full" />
+</div>
+              <div><input id="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} className="border-b p-2 w-full" />
+</div>
+              <div><input id="password_confirmation" type="password" placeholder="Confirm Password" value={formData.password_confirmation} onChange={handleChange} className="border-b p-2 w-full" />
+</div>
+             
             </div>
 
             {/* Conditional Fields */}

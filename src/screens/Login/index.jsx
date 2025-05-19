@@ -116,7 +116,7 @@ const Login = () => {
 
             {(mode === 'email' || otpSent) && <button type="button" onClick={handleLogin} className='bg-[#F48643] py-3 w-full text-white mt-10 hover:bg-[#4D953E] duration-200 hover:scale-95' disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>}
 
-            <p className="mt-4 text-[#292929]">If you're a New User, Please Register first! <span className="text-[#F48643] font-semibold"><Link to="/SignUp">Sign Up</Link></span></p>
+            <p className="mt-4 text-[#292929]">If you're a New User, Please Register first! <span className="text-[#F48643] font-semibold"><Link to="/signup">Sign Up</Link></span></p>
           </div>
         </div>
       </div>

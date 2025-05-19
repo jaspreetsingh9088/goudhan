@@ -11,8 +11,12 @@ const Navbar = () => {
   const [cartItems, setCartItems] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // 👈 mobile menu toggle
   const navigate = useNavigate();
+const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+ 
    useEffect(() => {
+     const token = localStorage.getItem('token');
+  if (token) setIsAuthenticated(true);
 const fetchSettings = async () => {
   const token = localStorage.getItem('token');
 
@@ -34,6 +38,7 @@ const fetchSettings = async () => {
 
     const fetchCart = async () => {
       const token = localStorage.getItem('token');
+    
       if (!token) return;
 
       try {
@@ -57,17 +62,26 @@ const fetchSettings = async () => {
     fetchCart();
   }, []);
 
-  const handleLoginClick = () => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    const userId = user ? JSON.parse(user).id : null;
+  
 
-    if (token && userId) {
-      navigate('/dashboard');
+ const handleLoginClick = () => {
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+
+  if (token && user) {
+    const parsedUser = JSON.parse(user);
+    const roleId = parsedUser.role_id;
+
+    if (roleId === 2) {
+      navigate('/seller');
     } else {
-      navigate('/Login');
+      navigate('/dashboard');
     }
-  };
+  } else {
+    navigate('/Login');
+  }
+};
+
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -88,13 +102,16 @@ const fetchSettings = async () => {
                 <p className="text-white">{settings ? settings.email : 'Loading...'}</p>
               </div>
             </div>
+
             <div
               className="flex gap-2 items-center justify-end cursor-pointer"
               onClick={handleLoginClick}
             >
               <FaUser className="text-white text-lg" />
-              <span className="text-white">Login</span>
+                 <span className="text-white">{isAuthenticated ? 'My Account' : 'Login'}</span>
+
             </div>
+
           </div>
         </div>
       </section>

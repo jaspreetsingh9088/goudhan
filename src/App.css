@@ -17,3 +17,8 @@ section.banner-hero button:hover {
 section.banner-hero button {
   transition: 0.3s;
 }
+
+button.crop-btn {
+  z-index: 1000;
+  position: relative;
+}
