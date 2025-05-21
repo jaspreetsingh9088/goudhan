@@ -9,6 +9,7 @@ const OurProducts = () => {
   const [filtered, setFiltered] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('');
@@ -20,9 +21,11 @@ const OurProducts = () => {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setProducts(data.products);
-          setFiltered(data.products);
-          setCategories(data.categories);
+          const allProducts = data.products;
+          setProducts(allProducts);
+          setFiltered(allProducts);
+          const extractedCategories = extractCategoriesWithSubcategories(allProducts);
+          setCategories(extractedCategories);
         }
       })
       .catch(err => {
@@ -30,11 +33,43 @@ const OurProducts = () => {
       });
   }, []);
 
+  const extractCategoriesWithSubcategories = (products) => {
+    const categoryMap = {};
+
+    products.forEach(p => {
+      const catName = p.category?.name?.trim();
+      const subcatName = p.subcategory?.name?.trim();
+
+      if (catName) {
+        if (!categoryMap[catName]) {
+          categoryMap[catName] = {
+            name: catName,
+            subcategories: [],
+          };
+        }
+
+        if (subcatName && !categoryMap[catName].subcategories.includes(subcatName)) {
+          categoryMap[catName].subcategories.push(subcatName);
+        }
+      }
+    });
+
+    return Object.values(categoryMap).map((cat, index) => ({
+      id: index,
+      name: cat.name,
+      subcategories: cat.subcategories.map((sub, idx) => ({ id: `${index}-${idx}`, name: sub })),
+    }));
+  };
+
   useEffect(() => {
     let result = [...products];
 
     if (selectedCategory) {
       result = result.filter(p => p.category?.name.trim() === selectedCategory);
+    }
+
+    if (selectedSubcategory) {
+      result = result.filter(p => p.subcategory?.name.trim() === selectedSubcategory);
     }
 
     result = result.filter(p => {
@@ -68,19 +103,20 @@ const OurProducts = () => {
     }
 
     setFiltered(result);
-  }, [selectedCategory, priceRange, searchTerm, sortBy, products]);
+  }, [selectedCategory, selectedSubcategory, priceRange, searchTerm, sortBy, products]);
 
   const handleCategoryChange = (cat) => {
-    setSelectedCategory(prevCategory => (prevCategory === cat ? null : cat));
+    setSelectedCategory(prev => (prev === cat ? null : cat));
+    setSelectedSubcategory(null); // reset subcategory
   };
 
-  const handleProductClick = (productSlug) => {
-    navigate(`/product/${productSlug}`);
+  const handleProductClick = (slug) => {
+    navigate(`/product/${slug}`);
   };
 
   return (
     <>
-      {/* Banner Image */}
+      {/* Banner */}
       <section
         className='bg h-[308px] bg-no-repeat bg-cover bg-top'
         style={{ backgroundImage: `url(${ourproductimg})` }}
@@ -102,11 +138,27 @@ const OurProducts = () => {
                     <label className='flex items-center space-x-2 mb-2'>
                       <input
                         type='radio'
-                        checked={selectedCategory === cat.name.trim()}
-                        onChange={() => handleCategoryChange(cat.name.trim())}
+                        checked={selectedCategory === cat.name}
+                        onChange={() => handleCategoryChange(cat.name)}
                       />
-                      <span>{cat.name.trim()}</span>
+                      <span>{cat.name}</span>
                     </label>
+
+                    {/* Subcategory Filter */}
+                    {selectedCategory === cat.name && cat.subcategories.length > 0 && (
+                      <div className='ml-5 mt-1'>
+                        {cat.subcategories.map((subcat) => (
+                          <label key={subcat.id} className='flex items-center space-x-2 mb-1'>
+                            <input
+                              type='radio'
+                              checked={selectedSubcategory === subcat.name}
+                              onChange={() => setSelectedSubcategory(subcat.name)}
+                            />
+                            <span className='text-sm'>{subcat.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -125,34 +177,36 @@ const OurProducts = () => {
                 <p className='text-sm mt-1'>Up to ₹{priceRange[1]}</p>
               </div>
 
+              {/* Clear Filters */}
+              <button
+                className='text-sm text-blue-500 underline mt-4'
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSelectedSubcategory(null);
+                  setPriceRange([0, 100000]);
+                  setSearchTerm('');
+                  setSortBy('');
+                }}
+              >
+                Clear Filters
+              </button>
             </div>
 
-            {/* Main Content */}
+            {/* Product Content */}
             <div className='col-span-1 md:col-span-3'>
 
               {/* Search and Sort */}
               <div className='flex flex-col md:flex-row items-center justify-between mb-6'>
                 <div className="relative w-full md:w-[100%] mb-4 md:mb-0">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                    <svg
-                      className="w-5 h-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
-                      />
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
                     </svg>
                   </span>
                   <input
                     type="text"
                     placeholder="Search products..."
-                    className="border px-4 py-2 pl-10  w-full"
+                    className="border px-4 py-2 pl-10 w-full"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{ background: '#fff' }}
@@ -180,11 +234,7 @@ const OurProducts = () => {
                   </div>
                 ) : (
                   filtered.map((product) => (
-                    <div
-                      key={product.slug || product.id}
-                      onClick={() => handleProductClick(product.slug)}
-                      className='cursor-pointer'
-                    >
+                    <div key={product.slug || product.id} onClick={() => handleProductClick(product.slug)} className='cursor-pointer'>
                       <div className='relative'>
                         <img src={heart} className='absolute z-1 right-3 top-2 cursor-pointer' alt='Wishlist' />
                       </div>
