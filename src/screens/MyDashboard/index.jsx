@@ -3,6 +3,8 @@ import { AiOutlineDashboard } from 'react-icons/ai';
 import { FaBoxOpen, FaRegAddressBook, FaSignOutAlt, FaUserEdit } from 'react-icons/fa';
 import myprofile from '../../assets/myprofile.png';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
  
 const MyDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -40,22 +42,23 @@ const MyDashboard = () => {
     fetchUserData();
   }, []); // Empty dependency array to run this once when component mounts
 
+const navigate = useNavigate();
+
 const handleLogout = async () => {
   const token = localStorage.getItem('token');
 
   if (!token) {
     console.log('No token found. Already logged out.');
-    // Remove only token and user keys, not entire localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    navigate('/login'); // Use navigate instead of window.location.href
     return;
   }
 
   try {
     const response = await axios.post(
       'https://mitdevelop.com/goudhan/admin/api/logout',
-      {}, // No body
+      {},
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -63,17 +66,16 @@ const handleLogout = async () => {
         },
       }
     );
-
     console.log('Logout success:', response.data);
   } catch (error) {
     console.error('Logout error:', error.response?.data || error.message);
   } finally {
-    // Remove only token and user keys, not entire localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    navigate('/login'); // Redirection using react-router
   }
 };
+
 
   const renderContent = () => {
     switch (activeTab) {
@@ -113,7 +115,7 @@ const handleLogout = async () => {
         return <p className="text-gray-700">Manage your saved addresses here.</p>;
       case 'logout':
         handleLogout();
-        return <p className="text-gray-700">Logging out...</p>;
+      
       default:
         return (
           <>
@@ -175,7 +177,7 @@ const handleLogout = async () => {
             </div>
 
             <ul className="space-y-2">
-              {['dashboard', 'orders', 'profile', 'addresses', 'logout'].map(tab => (
+              {['dashboard', 'orders', 'profile', 'logout'].map(tab => (
                 <li key={tab} className="text-start">
                   <button
                     onClick={() => setActiveTab(tab)}

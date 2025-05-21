@@ -15,6 +15,7 @@ const [totalProducts, setTotalProducts] = useState(0);
   const [categories, setCategories] = useState([]);
 const [subcategories, setSubcategories] = useState([]);
 
+ const [showModal, setShowModal] = useState(false);
 
 useEffect(() => {
   const fetchMyProducts = async () => {
@@ -86,7 +87,6 @@ const [form, setForm] = React.useState({
   quantity: "",
   // go_points: "",
   manufacturer: "",
-  tax_detail: "",
   cgst: "",
   sgst: "",
   description: "",
@@ -179,7 +179,6 @@ const handleSubmit = async (e) => {
         quantity: "",
         // go_points: "",
         manufacturer: "",
-        tax_detail: "",
         cgst: "",
         sgst: "",
         description: "",
@@ -252,12 +251,15 @@ useEffect(() => {
     <div className="bg-[#ff8d4c0f] pt-5">
       <div className="p-4 max-w-7xl mx-auto ">
         {/* Seller Info */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
           <div className="col-span-3 bg-[#fff] rounded-lg shadow-lg ">
             <div className="bg h-[200px] bg-bottom bg-no-repeat rounded-lg bg-cover" style={{ backgroundImage: `url(${gaushalabg})` }}></div>
             <div className="relative">
-              <div className="flex items-center gap-4 bg-[#fff] absolute -top-10 w-[100%] z py-5 pt-0 px-6 rounded-lg ">
-                <img src={myprofile} alt="Seller" className="rounded-full border-3 border-[#fff] w-30 object-cover relative bottom-20" />
+              <div className="flex items-center gap-12 bg-[#fff]  -top-10 w-[100%] z py-5 pt-0 px-6 rounded-lg items-end">
+                <div>
+                <img src={myprofile} alt="Seller" className="rounded-full border-3 border-[#fff] w-30 object-cover relative bottom-15" />
+                                <button onClick={handleLogout} className="cursor-grab  bg-[#f48643] relative bottom-12 p-2 w-[100%] text-[#fff] font-semibold mt-3 rounded-full">Logout</button>
+</div>
                 <div>
                   <h2 className="text-[38px] font-bold ">{authUser?.name || "Raymour"}</h2>
                   <p className="text-gray-500 text-[18px]">{authUser?.description || "Seller"}</p>
@@ -277,15 +279,15 @@ useEffect(() => {
                         <svg fill="#4D953E" width="24px" viewBox="0 0 512 512">
                           <path d="M377.181,376.303c-13.165,0.002-25.489-3.685-35.988-10.081c-10.499,6.396-22.823,10.083-35.99,10.083c-21.56,0-40.852-9.886-53.588-25.362l-57.617,15.698v-66.733l41.823-17.4l39.991-16.638c18.352-7.635,27.039-28.702,19.405-47.054c-7.635-18.352-28.702-27.039-47.054-19.405l-108.865,45.292c-22.133,9.208-36.555,30.827-36.555,54.8v57.282c0,85.722,69.492,155.214,155.214,155.214c82.493,0,149.944-64.358,154.909-145.603C402.433,372.681,390.224,376.303,377.181,376.303z"/>
                         </svg>
-<p className="text-[#4D953E]">
-  {authUser?.created_at
-    ? new Date(authUser.created_at).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      })
-    : "15 May 2025"}
-</p>
+                    <p className="text-[#4D953E]">
+                      {authUser?.created_at
+                        ? new Date(authUser.created_at).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric"
+                          })
+                        : "15 May 2025"}
+                    </p>
                       </div>
                     </div>
                     <div>
@@ -299,18 +301,16 @@ useEffect(() => {
                     </div>
                   </div>
                 </div>
+                <div className="block ml-auto">
+                    <button className='cursor-grab text-end bg-[#4D953E] text-white px-8 py-2 rounded-full '>Edit Profile</button>
+              </div>
               </div>
             </div>
           </div>
 
           {/* Shop Owner */}
           <div className="flex justify-end">
-            <div className="p-4 rounded-xl bg-[#f48643] shadow-xl text-center border-3 border-[#fff]">
-              <h3 className="text-[24px] font-bold border-b border-[#fff] mb-3 pb-2 text-white">Shop Owner</h3>
-              <img src={profile} alt="Owner" className="rounded-md" />
-              <h3 className="font-semibold text-2xl text-white mt-3">{authUser?.name || "Jhon Doe"}</h3>
-              <button onClick={handleLogout} className="bg-[#ffffff] p-2 w-[50%] text-[#f48643] font-semibold mt-3 rounded-full">Logout</button>
-            </div>
+            
           </div>
         </div>
 
@@ -483,7 +483,7 @@ useEffect(() => {
       className="w-full border border-gray-300 rounded px-4 py-2"
     />
   </div>
-<div>
+{/* <div>
     <label className="block text-gray-700 font-medium mb-1">Tax Detail</label>
     <input
       type="text"
@@ -492,7 +492,7 @@ useEffect(() => {
       onChange={handleChange}
       className="w-full border border-gray-300 rounded px-4 py-2"
     />
-  </div>
+  </div> */}
   <div className="md:col-span-2">
     <label className="block text-gray-700 font-medium mb-1">Description</label>
     <textarea
