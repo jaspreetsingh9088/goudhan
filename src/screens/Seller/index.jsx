@@ -816,18 +816,31 @@ const handleEditSubmit = async (e) => {
   <div className="mt-6">
     <h2 className="text-xl font-bold mb-4">My Products</h2>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {myProducts.map((product) => (
-        <div key={product.id} className="p-4 border rounded shadow">
-         <img
-  src={product.images && product.images.length > 0 ? product.images[0] : '/default.jpg'}
-  alt={product.name}
-  className="w-full h-40 object-cover rounded"
-/>
+    {myProducts.map((product) => (
+  <div key={product.id} className="p-4 border rounded shadow relative">
+    <img
+      src={product.images && product.images.length > 0 ? product.images[0] : '/default.jpg'}
+      alt={product.name}
+      className="w-full h-40 object-cover rounded"
+    />
+    <h3 className="font-semibold mt-2">{product.name}</h3>
+    <p className="text-sm text-gray-600">{product.price} ₹</p>
 
-          <h3 className="font-semibold mt-2">{product.name}</h3>
-          <p className="text-sm text-gray-600">{product.price} ₹</p>
-        </div>
-      ))}
+    {product.status !== 'active' && product.reason && (
+      <div className="mt-2 bg-red-100 text-red-700 p-2 rounded text-sm">
+        <strong>Rejected:</strong> {product.reason}
+      </div>
+    )}
+
+    {/* <button
+      onClick={() => handleEditProduct(product)}
+      className="absolute top-2 right-2 text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+    >
+      Edit
+    </button> */}
+  </div>
+))}
+
     </div>
   </div>
 )}

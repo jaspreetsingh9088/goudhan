@@ -236,6 +236,7 @@ const OurProducts = () => {
                         />
                         <div className='bg-[#fff8f3] px-4 py-4'>
                           <h4 className='text-[20px] font-medium capitalize'>{product.name}</h4>
+                          <p className='font-regular text-[18px]'>GP : {product.go_points || 0}</p>
                           <div className='flex mt-2 items-center justify-between'>
                             <div className='flex items-center gap-2'>
                               <p className='text-[18px]'>₹{product.price}</p>

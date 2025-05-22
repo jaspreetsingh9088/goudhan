@@ -44,12 +44,15 @@ const TopProducts = () => {
                 )}
                 <div className='bg-[#fff8f3] px-4 py-4 mt-3'>
                   <h4 className='text-[20px] mb-2 font-medium'>{product.name}</h4>
+                  <p className='font-regular text-[18px]'>GP : {product.go_points || 0}</p>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2'> 
                       <p className='font-regular text-[18px]'>₹{product.selling_price}</p>
                       <p className='font-regular text-[#F48643] text-[18px]'>
                         <del>₹{product.admin_mrp_price}</del>
                       </p>
+
+                       
                     </div>
                     <div className='flex items-center gap-1'>
                       <img src={cart} alt='Add to Cart' title='Add to Cart' className='hover:scale-150 duration-200 cursor-pointer' />
