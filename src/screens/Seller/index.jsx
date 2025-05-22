@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import gaushalabg from "../../assets/gaushalabg.jpg";
-import myprofile from "../../assets/myprofile.png";
+import defaultProfile from "../../assets/myprofile.png";
 import profile from "../../assets/profile.jpg";
 import Swal from 'sweetalert2'; 
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { FiBox } from "react-icons/fi";
+
 
 
 export default function SellerDashboard() {
@@ -80,7 +81,6 @@ useEffect(() => {
   };
    
 const [form, setForm] = React.useState({
-  
   category_id: "",
   subcategory_id: "",
   name: "",
@@ -89,28 +89,35 @@ const [form, setForm] = React.useState({
   shipping_charge: "",
   selling_price: "",
   quantity: "",
-  // go_points: "",
   manufacturer: "",
   cgst: "",
   sgst: "",
   description: "",
   status: "inactive",
   images: null,
-  user_id: "", 
-   profile_image: null,
+  user_id: "",
+  profile_image: null,  // to hold user profile image URL or File
 });
+
+const [myprofile, setMyprofile] = React.useState(null); // for the image src
 
 useEffect(() => {
   const user = localStorage.getItem("user");
   if (user) {
     const parsedUser = JSON.parse(user);
     setAuthUser(parsedUser);
+
     setForm((prev) => ({
       ...prev,
       user_id: parsedUser.id,
+      profile_image: parsedUser.profile_image || null, // assuming user has profile_image URL
     }));
+
+    // Set image src for the img tag
+    setMyprofile(parsedUser.profile_image || null);
   }
 }, []);
+
 
 
 const handleChange = (e) => {
@@ -368,12 +375,17 @@ const handleEditSubmit = async (e) => {
             <div className="relative">
               <div className="flex items-center gap-12 bg-[#fff]  -top-10 w-[100%] z py-5 pt-0 px-6 rounded-lg items-end">
                 <div>
-                <img src={myprofile} alt="Seller" className="rounded-full border-3 border-[#fff] w-30 object-cover relative bottom-15" />
+                  <img
+                   src={myprofile ? `https://mitdevelop.com/goudhan/admin/storage/app/public/${myprofile}` : defaultProfile}
+                    alt="Seller"
+                    className="rounded-full border-3 border-[#fff] w-30 h-30 object-cover relative bottom-15"
+                  />
+
                                 <button onClick={handleLogout} className="bg-[#f48643] relative bottom-12 p-2 w-[100%] text-[#fff] font-semibold mt-3 rounded-full">Logout</button>
-</div>
+              </div>
                 <div>
                   <h2 className="text-[38px] font-bold ">{authUser?.name || "Raymour"}</h2>
-                  <p className="text-gray-500 text-[18px]">{authUser?.description || "Seller"}</p>
+                  <p className="text-gray-500 text-[18px]">{authUser?.occupation || "Seller"}</p>
                   <div className="text-sm mt-3 flex gap-10 bg-[#4d953e0d] px-5 py-2 rounded-lg">
                     <div>
                       {/* <p className="mb-2"><span className="font-semibold text-[#292929] text-[20px] ">Location:</span></p> */}
@@ -433,110 +445,121 @@ const handleEditSubmit = async (e) => {
           </div>
         </div>
 {isModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center  bg-opacity-50 overflow-auto h-screen p-4">
-    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg max-h-[calc(100vh-4rem)] overflow-y-auto">
+  <div className="fixed inset-0 z-50 flex items-center justify-center  overflow-auto h-screen p-4">
+    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[calc(100vh-4rem)] overflow-y-auto">
       <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
 
       <form onSubmit={handleEditSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={editForm.name || ""}
-            onChange={handleEditChange}
-            className="w-full border border-gray-300 rounded px-4 py-2"
-            placeholder="Enter your name"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Email</label>
-          <input
-            type="text"
-            name="email"
-            value={editForm.email || ""}
-            onChange={handleEditChange}
-            className="w-full border border-gray-300 rounded px-4 py-2"
-            placeholder="Enter your email"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Phone number</label>
-          <input
-            type="text"
-            name="phone_number"
-            value={editForm.phone_number || ""}
-            onChange={handleEditChange}
-            className="w-full border border-gray-300 rounded px-4 py-2"
-            placeholder="Enter your phone number"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Address</label>
-          <input
-            type="text"
-            name="address"
-            value={editForm.address || ""}
-            onChange={handleEditChange}
-            className="w-full border border-gray-300 rounded px-4 py-2"
-            placeholder="Enter your address"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Pincode</label>
-          <input
-            type="text"
-            name="pincode"
-            className="w-full border border-gray-300 rounded px-4 py-2"
-            value={editForm.pincode}
-            onChange={handleEditChange}
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Date of Birth</label>
-          <input
-            type="date"
-            name="date_of_birth"
-            className="w-full border border-gray-300 rounded px-4 py-2"
-            value={editForm.date_of_birth}
-            onChange={handleEditChange}
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Occupation</label>
-          <input
-            type="text"
-            name="occupation"
-            className="w-full border border-gray-300 rounded px-4 py-2"
-            value={editForm.occupation}
-            onChange={handleEditChange}
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Profile Image</label>
-          {profileImageUrl && (
-            <img
-              src={profileImageUrl}
-              alt="Profile Preview"
-              className="mb-2 w-24 h-24 object-cover rounded-full border"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Name */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Name</label>
+            <input
+              type="text"
+              name="name"
+              value={editForm.name || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              placeholder="Enter your name"
             />
-          )}
-          <input
-            type="file"
-            name="profile_image"
-            onChange={handleEditChange}
-            className="w-full border border-gray-300 rounded px-4 py-2"
-          />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Email</label>
+            <input
+              type="text"
+              name="email"
+              value={editForm.email || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              placeholder="Enter your email"
+            />
+          </div>
+
+          {/* Phone number */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Phone number</label>
+            <input
+              type="text"
+              name="phone_number"
+              value={editForm.phone_number || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              placeholder="Enter your phone number"
+            />
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Address</label>
+            <input
+              type="text"
+              name="address"
+              value={editForm.address || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              placeholder="Enter your address"
+            />
+          </div>
+
+          {/* Pincode */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Pincode</label>
+            <input
+              type="text"
+              name="pincode"
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              value={editForm.pincode || ""}
+              onChange={handleEditChange}
+            />
+          </div>
+
+          {/* Date of Birth */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Date of Birth</label>
+            <input
+              type="date"
+              name="date_of_birth"
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              value={editForm.date_of_birth || ""}
+              onChange={handleEditChange}
+            />
+          </div>
+
+          {/* Occupation */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Occupation</label>
+            <input
+              type="text"
+              name="occupation"
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              value={editForm.occupation || ""}
+              onChange={handleEditChange}
+            />
+          </div>
+
+          {/* Profile Image */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Profile Image</label>
+            {profileImageUrl && (
+              <img
+                src={profileImageUrl}
+                alt="Profile Preview"
+                className="mb-2 w-24 h-24 object-cover rounded-full border"
+              />
+            )}
+            <input
+              type="file"
+              name="profile_image"
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+            />
+          </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-4">
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 mt-6">
           <button
             type="button"
             onClick={() => setIsModalOpen(false)}
@@ -544,7 +567,10 @@ const handleEditSubmit = async (e) => {
           >
             Cancel
           </button>
-          <button type="submit" className="bg-[#4D953E] text-white px-4 py-2 rounded">
+          <button
+            type="submit"
+            className="bg-[#4D953E] text-white px-4 py-2 rounded"
+          >
             Update Profile
           </button>
         </div>
@@ -552,6 +578,7 @@ const handleEditSubmit = async (e) => {
     </div>
   </div>
 )}
+
 
 
 

@@ -90,14 +90,6 @@ const OurProducts = () => {
       case 'priceHighLow':
         result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
         break;
-      case 'category':
-        result.sort((a, b) => a.category?.name.localeCompare(b.category?.name));
-        break;
-      case 'subcategory':
-        result.sort((a, b) =>
-          (a.subcategory?.name || '').localeCompare(b.subcategory?.name || '')
-        );
-        break;
       default:
         break;
     }
@@ -221,8 +213,6 @@ const OurProducts = () => {
                   <option value=''>Sort By</option>
                   <option value='priceLowHigh'>Price: Low to High</option>
                   <option value='priceHighLow'>Price: High to Low</option>
-                  <option value='category'>Category</option>
-                  <option value='subcategory'>Subcategory</option>
                 </select>
               </div>
 

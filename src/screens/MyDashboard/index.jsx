@@ -3,6 +3,7 @@ import { AiOutlineDashboard } from 'react-icons/ai';
 import { FaBoxOpen, FaRegAddressBook, FaSignOutAlt, FaUserEdit } from 'react-icons/fa';
 import myprofile from '../../assets/myprofile.png';
 import axios from 'axios';
+import Swal from 'sweetalert2'; 
 import { useNavigate } from 'react-router-dom';
 
  
@@ -10,6 +11,114 @@ const MyDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [userData, setUserData] = useState(null); 
+   const [showModal, setShowModal] = useState(false);
+     const [authUser, setAuthUser] = useState(null);
+  
+   const [isModalOpen, setIsModalOpen] = React.useState(false);
+   const [profileImageUrl, setProfileImageUrl] = React.useState(null);
+   
+   // Initial state for the profile edit form
+   const [editForm, setEditForm] = React.useState({
+     name: "",
+     email: "",
+     phone_number: "",
+     address: "",
+       pincode: "",
+     date_of_birth: "",
+     occupation: "",
+     profile_image: null,
+   });
+
+   const openEditProfileModal = () => {
+     const userData = JSON.parse(localStorage.getItem("user")) || {};
+   
+     setEditForm({
+       name: userData.name || "",
+       email: userData.email || "",
+       phone_number: userData.phone_number || "",
+       address: userData.address || "",
+        pincode: userData.pincode || "",
+     date_of_birth: userData.date_of_birth || "",
+     occupation: userData.occupation || "",
+       profile_image: null, 
+     });
+   
+     // Set preview URL to existing image path (full URL or relative path)
+     if (userData.profile_image) {
+       // If your image URL is relative, prepend your base URL here, e.g.:
+       const imageUrl = userData.profile_image.startsWith("http")
+         ? userData.profile_image
+         : `https://mitdevelop.com/goudhan/admin/storage/app/public/${userData.profile_image}`;
+   
+       setProfileImageUrl(imageUrl);
+     } else {
+       setProfileImageUrl(null);
+     }
+   
+     setIsModalOpen(true);
+   };
+   
+   
+   const handleEditChange = (e) => {
+     const { name, value, type, files } = e.target;
+   
+     if (type === "file") {
+       const file = files[0];
+       setEditForm((prev) => ({ ...prev, [name]: file }));
+   
+       if (file) {
+         const previewUrl = URL.createObjectURL(file);
+         setProfileImageUrl(previewUrl);
+       } else {
+         setProfileImageUrl(null);
+       }
+     } else {
+       setEditForm((prev) => ({ ...prev, [name]: value }));
+     }
+   };
+   
+   
+   const handleEditSubmit = async (e) => {
+     e.preventDefault();
+     const token = localStorage.getItem("token");
+   
+     try {
+       const formData = new FormData();
+   
+       for (const key in editForm) {
+         if (editForm[key] !== null) {
+           formData.append(key, editForm[key]);
+         }
+       }
+   
+       const response = await fetch("https://mitdevelop.com/goudhan/admin/api/user/update", {
+         method: "POST",
+         headers: {
+           Authorization: `Bearer ${token}`,
+           Accept: "application/json",
+         },
+         body: formData,
+       });
+   
+       const data = await response.json();
+   
+       if (response.ok) {
+         // ✅ Update localStorage user data
+         localStorage.setItem("user", JSON.stringify(data.user));
+   
+         Swal.fire("Updated!", "Profile updated successfully", "success");
+         setIsModalOpen(false);
+   
+         // Optionally: update auth user state if used elsewhere
+         setAuthUser(data.user);
+       } else {
+         Swal.fire("Error!", data.message || "Update failed", "error");
+       }
+     } catch (err) {
+       console.error("Profile update error:", err);
+       Swal.fire("Error!", "Something went wrong", "error");
+     }
+   };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -102,12 +211,155 @@ const handleLogout = async () => {
                 <h3 className="font-bold text-[#4D953E] mb-2">Address</h3>
                 <p className="text-gray-600">{userData?.address}</p>
               </div>
+              <div className="p-4 rounded-md bg-[#fff] shadow-lg">
+                <h3 className="font-bold text-[#4D953E] mb-2">Pincode</h3>
+                <p className="text-gray-600">{userData?.pincode || 'N/A'}</p>
+              </div>
+
+              <div className="p-4 rounded-md bg-[#fff] shadow-lg">
+                <h3 className="font-bold text-[#4D953E] mb-2">Date of Birth</h3>
+                <p className="text-gray-600">{userData?.date_of_birth || 'N/A'}</p>
+              </div>
+
+              <div className="p-4 rounded-md bg-[#fff] shadow-lg">
+                <h3 className="font-bold text-[#4D953E] mb-2">Occupation</h3>
+                <p className="text-gray-600">{userData?.occupation || 'N/A'}</p>
+              </div>
+
               <div className="mt-4">
-                <button className="bg-[#4D953E] text-white py-2 px-4 rounded-md">
+                <button
+                  onClick={openEditProfileModal}
+                  className="cursor-pointer text-end bg-[#4D953E] text-white px-8 py-2 rounded-full"
+                >
                   Edit Profile
                 </button>
               </div>
             </div>
+{isModalOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 overflow-auto h-screen p-4 bg-black/50">
+    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[calc(100vh-4rem)] overflow-y-auto">
+      <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
+
+      <form onSubmit={handleEditSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Name</label>
+            <input
+              type="text"
+              name="name"
+              value={editForm.name || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              placeholder="Enter your name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Email</label>
+            <input
+              type="text"
+              name="email"
+              value={editForm.email || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              placeholder="Enter your email"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Phone number</label>
+            <input
+              type="text"
+              name="phone_number"
+              value={editForm.phone_number || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              placeholder="Enter your phone number"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Address</label>
+            <input
+              type="text"
+              name="address"
+              value={editForm.address || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              placeholder="Enter your address"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Pincode</label>
+            <input
+              type="text"
+              name="pincode"
+              value={editForm.pincode || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              placeholder="Enter your pincode"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Date of Birth</label>
+            <input
+              type="date"
+              name="date_of_birth"
+              value={editForm.date_of_birth || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Occupation</label>
+            <input
+              type="text"
+              name="occupation"
+              value={editForm.occupation || ""}
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+              placeholder="Enter your occupation"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Profile Image</label>
+            {profileImageUrl && (
+              <img
+                src={profileImageUrl}
+                alt="Profile Preview"
+                className="mb-2 w-24 h-24 object-cover rounded-full border"
+              />
+            )}
+            <input
+              type="file"
+              name="profile_image"
+              onChange={handleEditChange}
+              className="w-full border border-gray-300 rounded px-4 py-2"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(false)}
+            className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
+          <button type="submit" className="bg-[#4D953E] text-white px-4 py-2 rounded">
+            Update Profile
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
           </div>
         );
       case 'addresses':
@@ -152,6 +404,7 @@ const handleLogout = async () => {
   };
 
   return (
+    
     <section>
       <div className="py-8 bg-[#4d953e1f] mb-12 border-b-8 border-[#4D953E]">
         <h1 className="text-[52px] text-center font-bold text-[#292929]">Dashboard</h1>
@@ -168,7 +421,19 @@ const handleLogout = async () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <aside className="bg-[#ed753b] rounded-lg shadow-lg p-5 sticky top-8 self-start h-fit">
             <div className="flex items-center border-b-1 pb-5 border-[#fff] mb-6">
-              <img src={myprofile} alt="Profile" className="w-20 h-20 rounded-full mr-3 border-4 border-[#fff]" />
+    <img
+  src={
+    authUser?.profile_image
+      ? authUser.profile_image.startsWith("http")
+        ? authUser.profile_image
+        : `https://mitdevelop.com/goudhan/admin/storage/app/public/${authUser.profile_image}`
+      : myprofile
+  }
+  alt="Profile"
+  className="w-20 h-20 rounded-full mr-3 border-4 border-[#fff]"
+/>
+
+
               <div>
                 <p className='text-white'>Hello!</p>
                 <h2 className="text-white text-lg font-semibold">{userData?.name}</h2>
@@ -198,6 +463,8 @@ const handleLogout = async () => {
         </div>
       </div>
     </section>
+
+    
   );
 };
 
