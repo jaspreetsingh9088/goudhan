@@ -87,7 +87,7 @@ const Banner = () => {
                       {/* Right image */}
                     <div className="relative">
                       <img
-                        src={banner.image ? `https://mitdevelop.com//goudhan/admin/storage/app/public/banners/${banner.image}` : gau}
+                       src={banner.image || gau}
                         alt={banner.title}
                         className="w-full mx-auto"
                         onError={(e) => { e.target.src = gau; }}

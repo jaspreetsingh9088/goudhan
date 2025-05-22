@@ -236,7 +236,7 @@ const handleLogout = async () => {
               </div>
             </div>
 {isModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 overflow-auto h-screen p-4 bg-black/50">
+  <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto h-screen p-4 bg-black/30 backdrop-blur-sm">
     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[calc(100vh-4rem)] overflow-y-auto">
       <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
 

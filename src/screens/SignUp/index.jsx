@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import login from '../../assets/login.png';
+import login from '../../assets/login.jpg';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2'; // Add this at the top

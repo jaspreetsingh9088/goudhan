@@ -345,13 +345,13 @@ const handleEditSubmit = async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-      // ✅ Update localStorage user data
+      
       localStorage.setItem("user", JSON.stringify(data.user));
 
       Swal.fire("Updated!", "Profile updated successfully", "success");
       setIsModalOpen(false);
 
-      // Optionally: update auth user state if used elsewhere
+      
       setAuthUser(data.user);
     } else {
       Swal.fire("Error!", data.message || "Update failed", "error");
@@ -445,7 +445,7 @@ const handleEditSubmit = async (e) => {
           </div>
         </div>
 {isModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center  overflow-auto h-screen p-4">
+  <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto h-screen p-4 bg-black/30 backdrop-blur-sm">
     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[calc(100vh-4rem)] overflow-y-auto">
       <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
 
