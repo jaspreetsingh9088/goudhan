@@ -9,12 +9,11 @@ import { useNavigate } from 'react-router-dom';
 const MyDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [userData, setUserData] = useState(null); // State to store user data
+  const [userData, setUserData] = useState(null); 
 
-  // Fetch user data when the component mounts
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = localStorage.getItem('token'); // Get token from local storage
+      const token = localStorage.getItem('token');
         console.error('toekn data:', token);
 
       if (!token) {
@@ -26,21 +25,21 @@ const MyDashboard = () => {
       try {
         const response = await axios.get('https://mitdevelop.com/goudhan/admin/api/user', {
           headers: {
-            'Authorization': `Bearer ${token}`, // Attach token in Authorization header
+            'Authorization': `Bearer ${token}`, 
             'Accept': 'application/json',
           },
         });
         
-        setUserData(response.data); // Set user data in state
+        setUserData(response.data); 
       } catch (error) {
         console.error('Error fetching user data:', error.response?.data || error.message);
-        localStorage.removeItem('token'); // Clear token if error occurs
+        localStorage.removeItem('token'); 
         window.location.href = '/login';
       }
     };
 
     fetchUserData();
-  }, []); // Empty dependency array to run this once when component mounts
+  }, []); 
 
 const navigate = useNavigate();
 
@@ -51,7 +50,7 @@ const handleLogout = async () => {
     console.log('No token found. Already logged out.');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login'); // Use navigate instead of window.location.href
+    navigate('/login'); 
     return;
   }
 
