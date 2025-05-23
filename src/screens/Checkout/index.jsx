@@ -107,6 +107,9 @@ const Checkout = () => {
   };
 
   return (
+    <>
+    <div class="py-8 bg-[#4d953e1f] mb-12 border-b-8 border-[#4D953E]"><h1 class="text-[52px] text-center font-bold text-[#292929]">Checkout</h1><nav class="text-center"><ol class="inline-flex items-center space-x-2 text-[#4D953E] font-medium text-lg"><li><a href="/" class="hover:underline">Home</a></li><li><span>/</span></li><li><span class="text-[#292929]">checkout</span></li></ol></nav></div>
+    
     <div className="max-w-7xl mx-auto p-6 grid md:grid-cols-3 gap-8">
       {/* Left Column - Billing Info */}
       <div className="col-span-2">
@@ -202,6 +205,7 @@ const Checkout = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

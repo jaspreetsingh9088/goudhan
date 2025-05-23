@@ -6,6 +6,8 @@ import profile from "../../assets/profile.jpg";
 import Swal from 'sweetalert2'; 
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { FiBox } from "react-icons/fi";
+import { FaEdit } from 'react-icons/fa';
+
 
 
 
@@ -16,11 +18,17 @@ export default function SellerDashboard() {
 const [myProducts, setMyProducts] = useState([]);
 const [totalProducts, setTotalProducts] = useState(0);
 
+const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
+const [selectedProductForEdit, setSelectedProductForEdit] = useState(null);
 
   const [categories, setCategories] = useState([]);
 const [subcategories, setSubcategories] = useState([]);
 
+const [myprofile, setMyprofile] = React.useState(null);
  const [showModal, setShowModal] = useState(false);
+
+ const [isModalOpen, setIsModalOpen] = React.useState(false);
+const [profileImageUrl, setProfileImageUrl] = React.useState(null);
 
 useEffect(() => {
   const fetchMyProducts = async () => {
@@ -53,9 +61,7 @@ useEffect(() => {
   fetchMyProducts();
 }, [activeTab]);
 
-
-
-  
+ 
   const handleLogout = async () => {
     const token = localStorage.getItem("token");
 
@@ -99,8 +105,6 @@ const [form, setForm] = React.useState({
   profile_image: null,  // to hold user profile image URL or File
 });
 
-const [myprofile, setMyprofile] = React.useState(null); // for the image src
-
 useEffect(() => {
   const user = localStorage.getItem("user");
   if (user) {
@@ -118,8 +122,6 @@ useEffect(() => {
   }
 }, []);
 
-
-
 const handleChange = (e) => {
   const { name, value, type, files } = e.target;
 
@@ -135,8 +137,6 @@ const handleChange = (e) => {
     }));
   }
 };
-
-
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -219,7 +219,6 @@ const handleSubmit = async (e) => {
   }
 };
 
-
 useEffect(() => {
   const token = localStorage.getItem("token");
 
@@ -241,6 +240,7 @@ useEffect(() => {
       console.error("Error fetching seller's categories:", error)
     );
 }, []);
+
 useEffect(() => {
   if (form.category_id) {
     const selectedCategory = categories.find(
@@ -256,7 +256,6 @@ useEffect(() => {
   }
 }, [form.category_id, categories]);
 
-// Initial state for the profile edit form
 const [editForm, setEditForm] = React.useState({
   name: "",
   email: "",
@@ -267,9 +266,6 @@ const [editForm, setEditForm] = React.useState({
   occupation: "",
   profile_image: null,
 });
-
-const [isModalOpen, setIsModalOpen] = React.useState(false);
-const [profileImageUrl, setProfileImageUrl] = React.useState(null);
 
 const openEditProfileModal = () => {
   const userData = JSON.parse(localStorage.getItem("user")) || {};
@@ -362,6 +358,69 @@ const handleEditSubmit = async (e) => {
   }
 };
 
+{/* product edit */ }
+
+const openEditProductModal = (product) => {
+  setSelectedProductForEdit(product);
+
+  setForm({
+    name: product.name || '',
+    price: product.price || '',
+    category_id: product.category_id?.toString() || '',
+    subcategory_id: product.subcategory_id?.toString() || '',
+    image: null, // for new upload only
+  });
+
+  const selectedCategory = categories.find(
+    (cat) => cat.id.toString() === product.category_id?.toString()
+  );
+  setSubcategories(selectedCategory?.subcategories || []);
+
+  setIsEditProductModalOpen(true);
+};
+
+
+const handleUpdateProduct = async (e, productId) => {
+  e.preventDefault();
+
+  const formData = new FormData();
+  formData.append("name", form.name);
+  formData.append("marked_price", form.price);
+  formData.append("category_id", form.category_id);
+  formData.append("subcategory_id", form.subcategory_id || '');
+  formData.append("status", "active");
+  formData.append("_method", "PUT");
+
+  if (form.image) {
+    formData.append("images[]", form.image);
+  }
+
+  try {
+    const res = await fetch(`https://mitdevelop.com/goudhan/api/products/${productId}`, {
+      method: "POST", // Laravel treats this as PUT because of _method
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("Product updated successfully");
+      setIsEditProductModalOpen(false);
+      fetchProducts();
+    } else {
+      console.error(data);
+      alert("Update failed");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("An error occurred while updating the product");
+  }
+};
+
+
 
 
 
@@ -378,23 +437,22 @@ const handleEditSubmit = async (e) => {
                   <img
                    src={myprofile ? `https://mitdevelop.com/goudhan/admin/storage/app/public/${myprofile}` : defaultProfile}
                     alt="Seller"
-                    className="rounded-full border-3 border-[#fff] w-30 h-30 object-cover relative bottom-15"
+                    className="rounded-full border-3 border-[#fff] w-30 h-30 object-cover relative bottom-30"
                   />
-
-                                <button onClick={handleLogout} className="bg-[#f48643] relative bottom-12 p-2 w-[100%] text-[#fff] font-semibold mt-3 rounded-full">Logout</button>
+                  
               </div>
                 <div>
                   <h2 className="text-[38px] font-bold ">{authUser?.name || "Raymour"}</h2>
-                  <p className="text-gray-500 text-[18px]">{authUser?.occupation || "Seller"}</p>
+                  <p className="text-gray-500 text-[18px] mb-3 bg-[#f486430a] px-5 py-2 rounded-sm">{authUser?.occupation || "Seller"} | <span className="text-[#f48643]">Email</span> : anchal@gamil.com | <span className="text-[#f48643]">DOB</span> : June, 12</p>
                   <div className="text-sm mt-3 flex gap-10 bg-[#4d953e0d] px-5 py-2 rounded-lg">
                     <div>
-                      {/* <p className="mb-2"><span className="font-semibold text-[#292929] text-[20px] ">Location:</span></p> */}
-                      {/* <div className="flex items-center gap-1">
+                      <p className="mb-2"><span className="font-semibold text-[#292929] text-[20px] ">Location:</span></p>
+                       <div className="flex items-center gap-1">
                         <svg className="w-6 h-6 text-[#4D953E]" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
                           <path fillRule="evenodd" d="M11.906 1.994a8.002 8.002 0 0 1 8.09 8.421 7.996 7.996 0 0 1-1.297 3.957c-.1.13-.186.27-.267.41l-.108.129a16.83 16.83 0 0 1-.573.699l-5.112 6.224a1 1 0 0 1-1.545 0L5.982 15.26a17.187 17.187 0 0 1-.442-.545 7.995 7.995 0 0 1 6.498-12.518ZM15 9.997a3 3 0 1 1-5.999 0 3 3 0 0 1 5.999 0Z" clipRule="evenodd" />
                         </svg>
                         <p className="text-[#4D953E]">{authUser?.location || "Illinois, USA"}</p>
-                      </div> */}
+                      </div>
                     </div>
                     <div>
                       <p className="mb-2"><span className="font-semibold text-[#292929] text-[20px] ">Joined:</span></p>
@@ -424,15 +482,19 @@ const handleEditSubmit = async (e) => {
 
 
                     </div>
+                  
                   </div>
                 </div>
                <div className="block ml-auto">
+                
                 <button
                   onClick={openEditProfileModal}
-                  className="cursor-pointer text-end bg-[#4D953E] text-white px-8 py-2 rounded-full"
+                  className="cursor-pointer text-center bg-[#4D953E] text-white w-[100%] block ml-auto px-8 py-2 rounded-full"
                 >
                   Edit Profile
                 </button>
+                                <button onClick={handleLogout} className="bg-[#f48643] p-2 w-[100%] block ml-auto text-[#fff] font-semibold mt-3 rounded-full">Logout</button>
+
               </div>
 
               </div>
@@ -445,7 +507,7 @@ const handleEditSubmit = async (e) => {
           </div>
         </div>
 {isModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto h-screen p-4 bg-black/30 backdrop-blur-sm">
+  <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto h-screen p-4 backdrop-blur-[1px] bg-black/10">
     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[calc(100vh-4rem)] overflow-y-auto">
       <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
 
@@ -579,17 +641,13 @@ const handleEditSubmit = async (e) => {
   </div>
 )}
 
-
-
-
-
         {/* Tabs */}
 
 <div className="bg-[#fff] p-5 mt-10">
   <div className="border-b border-gray-200">
-    <div className="flex gap-6">
+    <div className="flex gap-1">
       {["My Products", "Create Products", "Extra Info"].map(tab => (
-        <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 ${activeTab === tab ? "text-[#f48643] font-semibold border-b-2 border-[#f48643]" : "text-gray-500"}`}>
+        <button  key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 ${activeTab === tab ? "text-[#f48643] font-semibold border-b-2 border-[#f48643] duration-300" : "text-white font-semibold bg-[#f48643] cursor-pointer"}`}>
           {tab}
         </button>
       ))}
@@ -797,9 +855,6 @@ const handleEditSubmit = async (e) => {
 />
 </div>
 
-
-
-
   <div className="md:col-span-2 flex justify-end">
     <button
       type="submit"
@@ -832,12 +887,123 @@ const handleEditSubmit = async (e) => {
       </div>
     )}
 
-    {/* <button
-      onClick={() => handleEditProduct(product)}
-      className="absolute top-2 right-2 text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-    >
-      Edit
-    </button> */}
+   <button
+   onClick={() => openEditProductModal(product)}
+  className="absolute top-2 right-2 bg-[#f48643] hover:bg-blue-700 text-white p-2 rounded-full shadow"
+>
+  <FaEdit size={16} />
+</button>
+
+{isEditProductModalOpen && selectedProductForEdit && (
+ <div className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-[1px] bg-black/10">
+    <div className="bg-white p-6 rounded w-full max-w-md">
+      <h2 className="text-xl font-bold mb-4">Edit Product</h2>
+
+      <form onSubmit={(e) => handleUpdateProduct(e, selectedProductForEdit.id)} encType="multipart/form-data">
+        {/* Product Name */}
+        <input
+          type="text"
+          value={form.name || ''}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          className="w-full border p-2 mb-4 rounded"
+          name="name"
+        />
+
+        {/* Product Price */}
+        <input
+          type="number"
+          value={form.price || ''}
+          onChange={(e) => setForm({ ...form, price: e.target.value })}
+          className="w-full border p-2 mb-4 rounded"
+          name="marked_price"
+        />
+
+        {/* Product Image Preview */}
+        {selectedProductForEdit.image && (
+          <img
+            src={`https://mitdevelop.com/goudhan/admin/storage/app/public/products/${selectedProductForEdit.image}`}
+            alt="Product"
+            className="w-32 h-32 object-cover mb-2"
+          />
+        )}
+
+
+        {/* Image Input */}
+       <input
+      type="file"
+      name="images[]"
+      accept="image/*"
+      onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
+      className="w-full mb-4"
+    />
+
+
+        {/* Category Dropdown */}
+        <select
+          name="category_id"
+          value={form.category_id || ''}
+          onChange={(e) => {
+            const selected = e.target.value;
+            setForm({ ...form, category_id: selected, subcategory_id: '' });
+            const selectedCategory = categories.find(cat => cat.id.toString() === selected);
+            setSubcategories(selectedCategory?.subcategories || []);
+          }}
+          className="w-full border p-2 mb-4 rounded"
+        >
+          <option value="">Select Category</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+
+        {/* Subcategory Dropdown */}
+        <select
+          name="subcategory_id"
+          value={form.subcategory_id || ''}
+          onChange={(e) => setForm({ ...form, subcategory_id: e.target.value })}
+          className="w-full border p-2 mb-4 rounded"
+        >
+          <option value="">Select Subcategory</option>
+          {subcategories.map((sub) => (
+            <option key={sub.id} value={sub.id}>
+              {sub.sub_category}
+            </option>
+          ))}
+        </select>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setIsEditProductModalOpen(false)}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleDeleteProduct(selectedProductForEdit.id)}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Delete
+          </button>
+
+          <button
+            type="submit"
+            className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+          >
+            Update Product
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+
   </div>
 ))}
 

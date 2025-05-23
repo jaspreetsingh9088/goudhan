@@ -48,14 +48,14 @@ const AddToCart = () => {
   const removeFromCart = async (productId) => {
     try {
       const response = await fetch(`https://mitdevelop.com/goudhan/admin/api/cart/${userId}/${productId}`, {
-        method: 'post',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
 
       const data = await response.json();
       if (response.ok) {
         setCartItems(prev => prev.filter(item => item.product.id !== productId));
-        alert('Item removed from cart');
+        // alert('Item removed from cart');
       } else {
         alert(data.message || 'Failed to remove item');
       }
@@ -187,12 +187,12 @@ const AddToCart = () => {
                         </td>
                         <td className="py-3 px-5">
                           <button
-                            onClick={() => removeFromCart(item.product.id)}
-                            className="text-red-600 flex items-center gap-1"
-                          >
-                            <FaTrashAlt />
-                            Remove
-                          </button>
+                        onClick={() => removeFromCart(item.product.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-1 px-3 py-2 rounded"
+                      >
+                        <FaTrashAlt />
+                        Remove
+                      </button>
                         </td>
                       </tr>
                     );

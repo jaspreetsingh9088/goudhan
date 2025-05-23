@@ -114,7 +114,7 @@ const OurProducts = () => {
         style={{ backgroundImage: `url(${ourproductimg})` }}
       ></section>
 
-      <section className='our-products py-12 bg-[#f4864308]'>
+      <section className='our-products py-12 '>
         <div className='container mx-auto px-8'>
           <div className='grid grid-cols-1 md:grid-cols-4 gap-5'>
 
