@@ -6,7 +6,7 @@ import support from '../../assets/support.svg';
 const OurPromises = () => {
   return (
     <>
-      <section className='our-promises py-8 border-b-2 border-[#f4864359]'>
+      <section className='our-promises py-8 bg-[#f486430a] '>
         <div className='max-w-7xl mx-auto px-8 '>
               <div className='grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-4 gap-8'>
                  <div className='flex gap-2 items-center'>

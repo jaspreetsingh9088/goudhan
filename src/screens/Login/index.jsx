@@ -18,36 +18,47 @@ const Login = () => {
     setter({ ...values, [e.target.name]: e.target.value });
   };
 
-  const handleLogin = async () => {
-    setError('');
-    setLoading(true);
-    try {
-      const payload = mode === 'email'
-        ? { email: credentials.email, password: credentials.password }
-        : { phone_number: mobileCredentials.phone, otp: mobileCredentials.otp };
+const handleLogin = async () => {
+  setError('');
+  setLoading(true);
+  try {
+    const payload = mode === 'email'
+      ? { email: credentials.email, password: credentials.password }
+      : { phone_number: mobileCredentials.phone, otp: mobileCredentials.otp };
 
-      const endpoint = mode === 'email'
-        ? 'https://mitdevelop.com/goudhan/admin/api/login'
-        : 'https://mitdevelop.com/goudhan/admin/api/verify-otp';
+    const endpoint = mode === 'email'
+      ? 'https://mitdevelop.com/goudhan/admin/api/login'
+      : 'https://mitdevelop.com/goudhan/admin/api/verify-otp';
 
-      const response = await axios.post(endpoint, payload);
+    const response = await axios.post(endpoint, payload);
 
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token); 
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
 
-        const userRoleId = response.data.user?.role_id;
-        navigate(userRoleId === 2 ? '/Seller' : '/dashboard');
+      const userRoleId = response.data.user?.role_id;
+      console.log("User role ID:", userRoleId);
 
+      if (userRoleId === 1) {
+        navigate('/dashboard');
+      } else if (userRoleId === 2) {
+        navigate('/Seller'); 
+      } else if (userRoleId === 3) {
+        navigate('/dashboard');
       } else {
-        setError(response.data.message || 'Login failed');
+        navigate('/dashboard');
       }
-    } catch (err) {
-      setError(err.response?.data?.message || (err.response?.status === 401 ? 'Invalid credentials' : 'Server error.'));
-    } finally {
-      setLoading(false);
+
+    } else {
+      setError(response.data.message || 'Login failed');
     }
-  };
+  } catch (err) {
+    setError(err.response?.data?.message || (err.response?.status === 401 ? 'Invalid credentials' : 'Server error.'));
+  } finally {
+    setLoading(false);
+  }
+};
+
 
  
 

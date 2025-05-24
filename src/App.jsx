@@ -45,12 +45,12 @@ function Home() {
 
 function App() {
   return (
-    <Router basename='/'>
+    <Router basename='/goudhan'>
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="Login" element={<Login />} />
-        <Route path="signup" element={<SignUp />} />
+        <Route path="/Login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path="/dashboard" element={<MyDashboard />} />
         <Route path="/ContactUs" element={<ContactUs />} />
         <Route path="/OurProducts" element={<OurProducts />} />

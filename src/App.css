@@ -22,3 +22,6 @@ button.crop-btn {
   z-index: 1000;
   position: relative;
 }
+.shadow-tb {
+	box-shadow: 2px 2px 34px #0000007a;
+}

@@ -96,7 +96,7 @@ const AddToCart = () => {
 
   return (
     <>
-      <div className="py-8 bg-[#4d953e1f] mb-12 border-b-8 border-[#4D953E]">
+      <div className="py-8 bg-[#9d9d9d1f] mb-12 ">
         <h1 className="text-[52px] text-center font-bold text-[#292929]">Add To Cart</h1>
         <nav className="text-center">
           <ol className="inline-flex items-center space-x-2 text-[#4D953E] font-medium text-lg">
@@ -107,15 +107,15 @@ const AddToCart = () => {
         </nav>
       </div>
 
-      <div className="bg-[#fff8f4]">
+      <div className="">
         <div className="max-w-7xl mx-auto px-6 py-10">
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
             {/* CART TABLE */}
             <div className="col-span-3 overflow-x-auto">
-              <table className="min-w-full bg-white text-left">
+              <table className="min-w-full text-left bg-[#fff] border-t-0 border-1 border-[#797979b8] shadow-tb">
                 <thead>
-                  <tr className="text-[#292929] shadow-sm border-[#a8a8a8]">
-                    <th className="py-3 px-5">Image</th>
+                  <tr className="text-[#fff] bg-[#f68540] border-[#a8a8a8]">
+                    <th className="py-3 px-5 w-[15%] ">Image</th>
                     <th className="py-3 px-5 w-[30%]">Product Name</th>
                     <th className="py-3 px-5">Price</th>
                     <th className="py-3 px-5">Quantity</th>
@@ -131,8 +131,8 @@ const AddToCart = () => {
                     const total = price * quantity;
 
                     return (
-                      <tr key={index} className="border-b-1 border-[#f48643] align-top">
-                        <td className="py-3 px-5">
+                      <tr key={index} className="border-b-1 border-[#797979b8] align-top">
+                        <td className="py-3 align-middle px-5 border-1 border-[#cecece] border-t-0 border-b-0">
                           <img
                             src={
                               item.product?.images?.[0]?.image_path
@@ -143,9 +143,9 @@ const AddToCart = () => {
                             className="w-24"
                           />
                         </td>
-                        <td className="py-3 px-5">{item.product?.name}</td>
-                        <td className="py-3 px-5">₹{price.toFixed(2)}</td>
-                        <td className="py-3 px-5">
+                        <td className="py-3 px-5 align-middle">{item.product?.name}</td>
+                        <td className="py-3 px-5 align-middle">₹{price.toFixed(2)}</td>
+                        <td className="py-3 px-5 align-middle">
                           <input
                             type="number"
                             min="1"
@@ -168,8 +168,8 @@ const AddToCart = () => {
                             }}
                           />
                         </td>
-                        <td className="py-3 px-5">₹{total.toFixed(2)}</td>
-                        <td className="py-3 px-5 text-sm">
+                        <td className="py-3 px-5 align-middle">₹{total.toFixed(2)}</td>
+                        <td className="py-3 px-5 align-middle text-sm">
                           <div className="space-y-1">
                             {['online', 'nearest_store', 'referral'].map(method => (
                               <label key={method} className="flex items-center gap-2">
@@ -185,14 +185,15 @@ const AddToCart = () => {
                             ))}
                           </div>
                         </td>
-                        <td className="py-3 px-5">
-                          <button
+                        <td className="py-3 px-5 align-middle">
+                        <button
                         onClick={() => removeFromCart(item.product.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-1 px-3 py-2 rounded"
+                        className="bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 font-semibold flex items-center gap-1 px-4 py-2 rounded"
                       >
                         <FaTrashAlt />
                         Remove
                       </button>
+
                         </td>
                       </tr>
                     );
@@ -202,8 +203,8 @@ const AddToCart = () => {
             </div>
 
             {/* CART TOTAL & ACTIONS */}
-            <div className="col-span-1 bg-white shadow-lg p-4">
-              <h2 className="text-xl font-semibold text-[#000000] mb-3">Cart Total</h2>
+            <div className="col-span-1 border-2   border-[#cacaca] p-4 rounded-lg shadow-md space-y-4 bg-white">
+              <h2 className="text-2xl font-semibold text-white mb-4 bg-[#4d953e] rounded-md px-5 py-1">Cart Total</h2>
               <div className="mb-3">
                 <div className="flex justify-between text-[#292929] font-medium mb-2">
                   <span>Original Cart Total</span>

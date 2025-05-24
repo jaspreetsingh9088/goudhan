@@ -8,7 +8,7 @@ import panchagavya from '../../assets/panchagavya.png';
 const AboutUs = () => {
   return (
     <div>
-      <section className="bg-[#f1f7f0] py-10">
+      <section className="bg-[#9d9d9d1f] py-10">
          <div className='max-w-7xl mx-auto px-8'>
         <h1 className="text-[52px] text-center font-bold text-[#292929] ">About Us</h1>
         <nav className="text-center">

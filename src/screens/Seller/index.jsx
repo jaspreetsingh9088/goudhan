@@ -7,6 +7,9 @@ import Swal from 'sweetalert2';
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { FiBox } from "react-icons/fi";
 import { FaEdit } from 'react-icons/fa';
+import { FaBriefcase, FaEnvelope, FaBirthdayCake } from "react-icons/fa";
+import { FaMapMarkerAlt } from "react-icons/fa"; 
+
 
 
 
@@ -264,6 +267,7 @@ const [editForm, setEditForm] = React.useState({
     pincode: "",
   date_of_birth: "",
   occupation: "",
+  shop_name:"",
   profile_image: null,
 });
 
@@ -278,6 +282,7 @@ const openEditProfileModal = () => {
      pincode: userData.pincode || "",
   date_of_birth: userData.date_of_birth || "",
   occupation: userData.occupation || "",
+  shop_name: userData.shop_name || "" ,
     profile_image: null, 
   });
 
@@ -341,14 +346,12 @@ const handleEditSubmit = async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-      
+      // ✅ Update state and localStorage
       localStorage.setItem("user", JSON.stringify(data.user));
+      setAuthUser(data.user); // This triggers re-render
 
       Swal.fire("Updated!", "Profile updated successfully", "success");
       setIsModalOpen(false);
-
-      
-      setAuthUser(data.user);
     } else {
       Swal.fire("Error!", data.message || "Update failed", "error");
     }
@@ -358,23 +361,18 @@ const handleEditSubmit = async (e) => {
   }
 };
 
-{/* product edit */ }
 
+{/* product edit */ }
 const openEditProductModal = (product) => {
   setSelectedProductForEdit(product);
-
   setForm({
     name: product.name || '',
     price: product.price || '',
-    category_id: product.category_id?.toString() || '',
-    subcategory_id: product.subcategory_id?.toString() || '',
-    image: null, // for new upload only
+    image: null, 
   });
 
-  const selectedCategory = categories.find(
-    (cat) => cat.id.toString() === product.category_id?.toString()
-  );
-  setSubcategories(selectedCategory?.subcategories || []);
+  // No need to set subcategories now since category is removed
+  setSubcategories([]);
 
   setIsEditProductModalOpen(true);
 };
@@ -386,9 +384,6 @@ const handleUpdateProduct = async (e, productId) => {
   const formData = new FormData();
   formData.append("name", form.name);
   formData.append("marked_price", form.price);
-  formData.append("category_id", form.category_id);
-  formData.append("subcategory_id", form.subcategory_id || '');
-  formData.append("status", "active");
   formData.append("_method", "PUT");
 
   if (form.image) {
@@ -424,6 +419,7 @@ const handleUpdateProduct = async (e, productId) => {
 
 
 
+
   return (
     <div className="bg-[#ff8d4c0f] pt-5">
       <div className="p-4 max-w-7xl mx-auto ">
@@ -441,50 +437,66 @@ const handleUpdateProduct = async (e, productId) => {
                   />
                   
               </div>
-                <div>
-                  <h2 className="text-[38px] font-bold ">{authUser?.name || "Raymour"}</h2>
-                  <p className="text-gray-500 text-[18px] mb-3 bg-[#f486430a] px-5 py-2 rounded-sm">{authUser?.occupation || "Seller"} | <span className="text-[#f48643]">Email</span> : anchal@gamil.com | <span className="text-[#f48643]">DOB</span> : June, 12</p>
-                  <div className="text-sm mt-3 flex gap-10 bg-[#4d953e0d] px-5 py-2 rounded-lg">
-                    <div>
-                      <p className="mb-2"><span className="font-semibold text-[#292929] text-[20px] ">Location:</span></p>
-                       <div className="flex items-center gap-1">
-                        <svg className="w-6 h-6 text-[#4D953E]" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                          <path fillRule="evenodd" d="M11.906 1.994a8.002 8.002 0 0 1 8.09 8.421 7.996 7.996 0 0 1-1.297 3.957c-.1.13-.186.27-.267.41l-.108.129a16.83 16.83 0 0 1-.573.699l-5.112 6.224a1 1 0 0 1-1.545 0L5.982 15.26a17.187 17.187 0 0 1-.442-.545 7.995 7.995 0 0 1 6.498-12.518ZM15 9.997a3 3 0 1 1-5.999 0 3 3 0 0 1 5.999 0Z" clipRule="evenodd" />
-                        </svg>
-                        <p className="text-[#4D953E]">{authUser?.location || "Illinois, USA"}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="mb-2"><span className="font-semibold text-[#292929] text-[20px] ">Joined:</span></p>
-                      <div className="flex items-center gap-1">
-                        
-                    <p className="text-[#4D953E] flex items-center gap-2">
-                        <FaRegCalendarAlt className="text-[#4D953E]" />
-                        {authUser?.created_at
-                          ? new Date(authUser.created_at).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })
-                          : "15 May 2025"}
-                      </p>
+<div>
+  <h2 className="text-[38px] font-bold capitalize">{authUser?.name || "Raymour"}</h2>
 
-                      </div>
-                    </div>
-                    <div>
-                    <p className="mb-2">
-                      <span className="font-semibold text-[#292929] text-[20px]">Total Product:</span>
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <FiBox className="text-[#4D953E]" />
-                      <p className="text-[#4D953E]">{totalProducts}</p>
-                    </div>
+  <p className="text-[#292929] text-[18px] mb-3 py-2 rounded-sm flex items-center gap-4 flex-wrap">
+    <span className="flex items-center gap-1">
+      <FaBriefcase className="text-[#f48643]" />
+      {authUser?.occupation || "Seller"}
+    </span>
 
+    <span className="flex items-center gap-1">
+      <FaEnvelope className="text-[#f48643]" />
+      {authUser?.email || ""}
+    </span>
 
-                    </div>
-                  
-                  </div>
-                </div>
+    <span className="flex items-center gap-1">
+      <FaBirthdayCake className="text-[#f48643]" />
+      {authUser?.date_of_birth || "N/A"}
+    </span>
+  </p>
+
+  <div className="text-sm mt-3 flex gap-10 bg-[#4d953e0d] px-5 py-2 rounded-lg flex-wrap">
+    <div>
+      <p className="mb-2">
+        <span className="font-semibold text-[#292929] text-[20px]">Location:</span>
+      </p>
+     <div className="flex items-center gap-1 text-[#4D953E]">
+      <FaMapMarkerAlt className="text-[#f48643]" />
+      <p>{authUser?.address || "N/A"}</p>
+    </div>
+    </div>
+
+    <div>
+      <p className="mb-2">
+        <span className="font-semibold text-[#292929] text-[20px]">Joined:</span>
+      </p>
+      <div className="flex items-center gap-2 text-[#4D953E]">
+        <FaRegCalendarAlt className="text-[#f48643]" />
+        <p>
+          {authUser?.created_at
+            ? new Date(authUser.created_at).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            : "15 May 2025"}
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <p className="mb-2">
+        <span className="font-semibold text-[#292929] text-[20px]">Total Product:</span>
+      </p>
+      <div className="flex items-center gap-2 text-[#4D953E]">
+        <FiBox className="text-[#f48643]" />
+        <p>{totalProducts}</p>
+      </div>
+    </div>
+  </div>
+</div>
                <div className="block ml-auto">
                 
                 <button
@@ -600,6 +612,19 @@ const handleUpdateProduct = async (e, productId) => {
               onChange={handleEditChange}
             />
           </div>
+
+          {/* Shop Name */}
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">Shop Name</label>
+          <input
+            type="text"
+            name="shop_name"
+            className="w-full border border-gray-300 rounded px-4 py-2"
+            value={editForm.shop_name || ""}
+            onChange={handleEditChange}
+          />
+        </div>
+
 
           {/* Profile Image */}
           <div>
@@ -895,7 +920,7 @@ const handleUpdateProduct = async (e, productId) => {
 </button>
 
 {isEditProductModalOpen && selectedProductForEdit && (
- <div className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-[1px] bg-black/10">
+  <div className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-[1px] bg-black/10">
     <div className="bg-white p-6 rounded w-full max-w-md">
       <h2 className="text-xl font-bold mb-4">Edit Product</h2>
 
@@ -927,51 +952,14 @@ const handleUpdateProduct = async (e, productId) => {
           />
         )}
 
-
         {/* Image Input */}
-       <input
-      type="file"
-      name="images[]"
-      accept="image/*"
-      onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
-      className="w-full mb-4"
-    />
-
-
-        {/* Category Dropdown */}
-        <select
-          name="category_id"
-          value={form.category_id || ''}
-          onChange={(e) => {
-            const selected = e.target.value;
-            setForm({ ...form, category_id: selected, subcategory_id: '' });
-            const selectedCategory = categories.find(cat => cat.id.toString() === selected);
-            setSubcategories(selectedCategory?.subcategories || []);
-          }}
-          className="w-full border p-2 mb-4 rounded"
-        >
-          <option value="">Select Category</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
-
-        {/* Subcategory Dropdown */}
-        <select
-          name="subcategory_id"
-          value={form.subcategory_id || ''}
-          onChange={(e) => setForm({ ...form, subcategory_id: e.target.value })}
-          className="w-full border p-2 mb-4 rounded"
-        >
-          <option value="">Select Subcategory</option>
-          {subcategories.map((sub) => (
-            <option key={sub.id} value={sub.id}>
-              {sub.sub_category}
-            </option>
-          ))}
-        </select>
+        <input
+          type="file"
+          name="images[]"
+          accept="image/*"
+          onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
+          className="w-full mb-4"
+        />
 
         {/* Actions */}
         <div className="flex justify-end gap-2">
@@ -981,14 +969,6 @@ const handleUpdateProduct = async (e, productId) => {
             className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
           >
             Cancel
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleDeleteProduct(selectedProductForEdit.id)}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Delete
           </button>
 
           <button
@@ -1002,7 +982,6 @@ const handleUpdateProduct = async (e, productId) => {
     </div>
   </div>
 )}
-
 
   </div>
 ))}
