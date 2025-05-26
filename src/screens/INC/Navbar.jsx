@@ -72,7 +72,7 @@ const fetchSettings = async () => {
     const parsedUser = JSON.parse(user);
     const roleId = parsedUser.role_id;
 
-    if (roleId === 2) {
+    if (roleId == 2) {
       navigate('/seller');
     } else {
       navigate('/dashboard');

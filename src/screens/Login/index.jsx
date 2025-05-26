@@ -39,11 +39,11 @@ const handleLogin = async () => {
       const userRoleId = response.data.user?.role_id;
       console.log("User role ID:", userRoleId);
 
-      if (userRoleId === 1) {
+      if (userRoleId == 1) {
         navigate('/dashboard');
-      } else if (userRoleId === 2) {
+      } else if (userRoleId == 2) {
         navigate('/Seller'); 
-      } else if (userRoleId === 3) {
+      } else if (userRoleId == 3) {
         navigate('/dashboard');
       } else {
         navigate('/dashboard');
