@@ -45,7 +45,7 @@ function Home() {
 
 function App() {
   return (
-    <Router basename='/goudhan'>
+    <Router basename='/'>
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />

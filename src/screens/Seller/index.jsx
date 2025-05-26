@@ -364,58 +364,83 @@ const handleEditSubmit = async (e) => {
 
 {/* product edit */ }
 const openEditProductModal = (product) => {
+  console.log('Product data:', product);
+
   setSelectedProductForEdit(product);
+
+  // Extract first image URL if images array exists
+  const firstImage = product.images && product.images.length > 0
+    ? product.images[0] // assuming this is a string URL already
+    : null;
+
   setForm({
     name: product.name || '',
     price: product.price || '',
-    image: null, 
+    category_id: product.category.id || '',
+    sub_category_id: product.subcategory.id || '',
+    image: null, // for new image upload
+    existingImage: firstImage, // URL string for preview
   });
-
-  // No need to set subcategories now since category is removed
-  setSubcategories([]);
 
   setIsEditProductModalOpen(true);
 };
 
+const [products, setProducts] = React.useState([]);
+
+ 
 
 const handleUpdateProduct = async (e, productId) => {
   e.preventDefault();
-
-  const formData = new FormData();
-  formData.append("name", form.name);
-  formData.append("marked_price", form.price);
-  formData.append("_method", "PUT");
-
-  if (form.image) {
-    formData.append("images[]", form.image);
-  }
+  const token = localStorage.getItem("token");
 
   try {
-    const res = await fetch(`https://mitdevelop.com/goudhan/api/products/${productId}`, {
-      method: "POST", // Laravel treats this as PUT because of _method
+    const formData = new FormData();
+
+    for (const key in form) {
+      if (form[key] !== null && form[key] !== undefined) {
+        if (key === "image") {
+          formData.append("images[]", form[key]);
+        } else if (key === "price") {
+          formData.append("marked_price", form[key]);
+        } else {
+          formData.append(key, form[key]);
+        }
+      }
+    }
+
+    formData.append("_method", "PUT");
+
+    const response = await fetch(`https://mitdevelop.com/goudhan/admin/api/products/${productId}`, {
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
       body: formData,
     });
 
-    const data = await res.json();
+    const data = await response.json();
 
     if (data.success) {
-      alert("Product updated successfully");
+      Swal.fire("Updated!", data.message || "Product updated successfully", "success");
+
+      // Option 1: Update product in list
+      setProducts(prev =>
+        prev.map(p => (p.id === data.data.id ? data.data : p))
+      );
+
+      // Option 2: Re-fetch from server
+      // await fetchProducts();
+
       setIsEditProductModalOpen(false);
-      fetchProducts();
     } else {
-      console.error(data);
-      alert("Update failed");
+      Swal.fire("Error!", data.message || "Update failed", "error");
     }
-  } catch (error) {
-    console.error(error);
-    alert("An error occurred while updating the product");
+  } catch (err) {
+    console.error("Product update error:", err);
+    Swal.fire("Error!", "Something went wrong", "error");
   }
 };
-
-
 
 
 
@@ -925,34 +950,81 @@ const handleUpdateProduct = async (e, productId) => {
       <h2 className="text-xl font-bold mb-4">Edit Product</h2>
 
       <form onSubmit={(e) => handleUpdateProduct(e, selectedProductForEdit.id)} encType="multipart/form-data">
+  {/* Category Select */}
+<label className="block mb-1 font-medium">Category</label>
+<select
+  value={form.category_id || ''}
+  onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+  className="w-full border p-2 mb-4 rounded"
+  name="category_id"
+>
+  <option value="">Select Category</option>
+  {categories.map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name}
+    </option>
+  ))}
+</select>
+
+{/* Subcategory Select */}
+<label className="block mb-1 font-medium">Subcategory</label>
+<select
+  value={form.sub_category_id || ''}
+  onChange={(e) => setForm({ ...form, sub_category_id: e.target.value })}
+  className="w-full border p-2 mb-4 rounded"
+  name="subcategory_id"
+>
+  <option value="">Select Subcategory</option>
+  {subcategories.map((sub) => (
+    <option key={sub.id} value={sub.id}>
+      {sub.sub_category}
+    </option>
+  ))}
+</select>
+
+
+
+
+
         {/* Product Name */}
+        <label className="block mb-1 font-medium">Product Name</label>
         <input
           type="text"
           value={form.name || ''}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           className="w-full border p-2 mb-4 rounded"
           name="name"
+          
         />
 
         {/* Product Price */}
+        <label className="block mb-1 font-medium">Product Price</label>
         <input
           type="number"
           value={form.price || ''}
           onChange={(e) => setForm({ ...form, price: e.target.value })}
           className="w-full border p-2 mb-4 rounded"
           name="marked_price"
+          
         />
 
         {/* Product Image Preview */}
-        {selectedProductForEdit.image && (
-          <img
-            src={`https://mitdevelop.com/goudhan/admin/storage/app/public/products/${selectedProductForEdit.image}`}
-            alt="Product"
-            className="w-32 h-32 object-cover mb-2"
-          />
+        <label className="block mb-1 font-medium">Current Image</label>
+        {selectedProductForEdit?.images?.[0] && (
+          <div className="mb-3">
+            <p className="text-sm text-gray-600">Current Image</p>
+            <img
+              src={selectedProductForEdit.images[0]}
+              alt="Current"
+              className="w-32 h-auto rounded"
+            />
+          </div>
         )}
 
-        {/* Image Input */}
+
+
+        {/* New Image Input */}
+        <label className="block mb-1 font-medium">New Image (optional)</label>
         <input
           type="file"
           name="images[]"
@@ -982,6 +1054,7 @@ const handleUpdateProduct = async (e, productId) => {
     </div>
   </div>
 )}
+
 
   </div>
 ))}
