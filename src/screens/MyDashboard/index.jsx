@@ -23,7 +23,7 @@ const MyDashboard = () => {
      email: "",
      phone_number: "",
      address: "",
-       pincode: "",
+     pincode: "",
      date_of_birth: "",
      occupation: "",
      profile_image: null,
@@ -184,6 +184,18 @@ const handleLogout = async () => {
   }
 };
 
+
+
+   const [copied, setCopied] = useState(false);
+
+  const referralLink = `https://goudhan.life/signup/${userData?.referred_by}`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(referralLink).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Reset after 2 sec
+    });
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -389,6 +401,57 @@ const handleLogout = async () => {
                 <h3 className="font-bold text-[#4D953E] mb-2">Address</h3>
                 <p className="text-gray-600">{userData?.address}</p>
               </div>
+
+<div
+  style={{
+    width: "100%",
+    margin: "1.5rem auto",
+    padding: "1rem",
+    border: "1px solid #ccc",
+    borderRadius: "0.5rem",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+  }}
+>
+  <h3 style={{ fontSize: "1.125rem", fontWeight: "600", marginBottom: "0.5rem" }}>
+    Your Referral Link
+  </h3>
+  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+    <input
+      type="text"
+      value={referralLink}
+      readOnly
+      style={{
+        flex: 1,
+        padding: "0.5rem",
+        border: "1px solid #ccc",
+        borderRadius: "0.375rem",
+      }}
+    />
+    <button
+      onClick={handleCopy}
+      style={{
+        backgroundColor: "#2563EB", // blue-600
+        color: "#fff",
+        padding: "0.5rem 1rem",
+        borderRadius: "0.375rem",
+        transition: "background-color 0.2s ease",
+        border: "none",
+        cursor: "pointer",
+      }}
+      onMouseOver={(e) => (e.target.style.backgroundColor = "#1D4ED8")} // blue-700
+      onMouseOut={(e) => (e.target.style.backgroundColor = "#2563EB")}
+    >
+      Copy
+    </button>
+  </div>
+  {copied && (
+    <p style={{ color: "#16A34A", fontSize: "0.875rem", marginTop: "0.5rem" }}>
+      Referral link copied!
+    </p>
+  )}
+</div>
+
+
             </div>
           </>
         );

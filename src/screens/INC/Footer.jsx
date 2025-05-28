@@ -33,11 +33,11 @@ const Footer = () => {
      <img src={goudhanlogo} alt='' className='mb-4' />
      <p className='mb-4'>We serve with love to uplift society through peace, prosperity, and awareness.</p>
      <div className='flex gap-3 items-center'>
-        <div> <img src={Contact} alt='' /></div>
+        {/* <div> <img src={Contact} alt='' /></div>
         <div>
             <h3 className='font-medium text-[20px]'>Customer Support</h3>
         <p>+0123 456 789</p>
-        </div>
+        </div> */}
      </div>
     </div>
     <div className='block mx-auto'>
@@ -63,7 +63,7 @@ const Footer = () => {
     <div className='bg-[#4D953E] py-2 mt-12 text-white'>
     <div className='max-w-7xl mx-auto px-8 '>
     <div className='grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-3 gap-8'>
-    <div className='col-span-2'><p>Copyright © 2024 Goudhan Store. All Rights Reserved. | Powered by: Techgeering</p></div>
+    <div className='col-span-2'><p>Copyright © 2024 Goudhan Store. All Rights Reserved.</p></div>
     <div className='flex gap-3 justify-end'>
        <div><img src={facebook} alt='' /></div>
        <div><img src={insta} alt='' /></div>

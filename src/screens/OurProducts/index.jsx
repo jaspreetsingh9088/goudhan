@@ -106,6 +106,28 @@ const OurProducts = () => {
     navigate(`/product/${slug}`);
   };
 
+  const [categorySearch, setCategorySearch] = useState('');
+
+const filteredCategories = categories.filter(cat =>
+  cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+);
+
+const [currentPage, setCurrentPage] = useState(1);
+const productsPerPage = 8;
+
+
+const indexOfLastProduct = currentPage * productsPerPage;
+const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+const currentProducts = filtered.slice(indexOfFirstProduct, indexOfLastProduct);
+
+const totalPages = Math.ceil(filtered.length / productsPerPage);
+
+useEffect(() => {
+  if (priceRange[0] > priceRange[1]) {
+    setPriceRange([priceRange[1], priceRange[1]]);
+  }
+}, [priceRange]);
+
   return (
     <>
       {/* Banner */}
@@ -123,65 +145,75 @@ const OurProducts = () => {
               <h4 className='text-xl text-white font-semibold mb-4 p-2 bg-[#F48643]'>Filters</h4>
 
               {/* Category Filter */}
-              <div className='mb-6'>
-                <h5 className='font-medium text-[#404040] text-[20px] border-b mb-3'>Categories</h5>
-                {categories.map((cat) => (
-                  <div key={cat.id}>
-                    <label className='flex items-center space-x-2 mb-2'>
-                      <input
-                        type='radio'
-                        checked={selectedCategory === cat.name}
-                        onChange={() => handleCategoryChange(cat.name)}
-                      />
-                      <span>{cat.name}</span>
-                    </label>
+             {/* Category Filter with Scroll and Search */}
+<div className='mb-6'>
+  <h5 className='font-medium text-[#404040] text-[20px] border-b mb-3'>Categories</h5>
+  
+  {/* Category Search */}
+  <input
+    type='text'
+    placeholder='Search category...'
+    className='mb-3 p-2 w-full border rounded text-sm'
+    value={categorySearch}
+    onChange={(e) => setCategorySearch(e.target.value)}
+  />
 
-                    {/* Subcategory Filter */}
-                    {selectedCategory === cat.name && cat.subcategories.length > 0 && (
-                      <div className='ml-5 mt-1'>
-                        {cat.subcategories.map((subcat) => (
-                          <label key={subcat.id} className='flex items-center space-x-2 mb-1'>
-                            <input
-                              type='radio'
-                              checked={selectedSubcategory === subcat.name}
-                              onChange={() => setSelectedSubcategory(subcat.name)}
-                            />
-                            <span className='text-sm'>{subcat.name}</span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Price Filter */}
-              <div className='bg-[#4f934112] p-3'>
-                <h5 className='font-medium mb-2'>Price Range</h5>
+  <div className='max-h-[300px] overflow-y-auto pr-2'>
+    {filteredCategories.map((cat) => (
+      <div key={cat.id}>
+        <label className='flex items-center space-x-2 mb-2'>
+          <input
+            type='radio'
+            checked={selectedCategory === cat.name}
+            onChange={() => handleCategoryChange(cat.name)}
+          />
+          <span>{cat.name}</span>
+        </label>
+        {selectedCategory === cat.name && cat.subcategories.length > 0 && (
+          <div className='ml-5 mt-1'>
+            {cat.subcategories.map((subcat) => (
+              <label key={subcat.id} className='flex items-center space-x-2 mb-1'>
                 <input
-                  type='range'
-                  min='0'
-                  max='100000'
-                  value={priceRange[1]}
-                  onChange={(e) => setPriceRange([0, Number(e.target.value)])}
-                  className='w-full accent-[#4d953e]'
+                  type='radio'
+                  checked={selectedSubcategory === subcat.name}
+                  onChange={() => setSelectedSubcategory(subcat.name)}
                 />
-                <p className='text-sm mt-1'>Up to ₹{priceRange[1]}</p>
-              </div>
+                <span className='text-sm'>{subcat.name}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+</div>
 
-              {/* Clear Filters */}
-              <button
-                className='text-sm text-blue-500 underline mt-4'
-                onClick={() => {
-                  setSelectedCategory(null);
-                  setSelectedSubcategory(null);
-                  setPriceRange([0, 100000]);
-                  setSearchTerm('');
-                  setSortBy('');
-                }}
-              >
-                Clear Filters
-              </button>
+
+          {/* Price Filter */}
+<div className='bg-[#4f934112] p-3'>
+  <h5 className='font-medium mb-2'>Price Range</h5>
+  <div className="flex items-center gap-2">
+    <input
+      type='number'
+      min='0'
+      value={priceRange[0]}
+      onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+      className='w-full px-2 py-1 border border-gray-300 rounded'
+      placeholder='Min ₹'
+    />
+    <span className="text-gray-500">to</span>
+    <input
+      type='number'
+      min='0'
+      value={priceRange[1]}
+      onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+      className='w-full px-2 py-1 border border-gray-300 rounded'
+      placeholder='Max ₹'
+    />
+  </div>
+  <p className='text-sm mt-2 text-gray-600'>Showing products between ₹{priceRange[0]} - ₹{priceRange[1]}</p>
+</div>
+
             </div>
 
             {/* Product Content */}
@@ -217,25 +249,25 @@ const OurProducts = () => {
               </div>
 
               {/* Product Grid */}
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'>
+              <div className='grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-5'>
                 {filtered.length === 0 ? (
                   <div className='col-span-3 text-center text-gray-500'>
                     <p>No products available matching the selected filters.</p>
                   </div>
                 ) : (
-                  filtered.map((product) => (
+                  currentProducts.map((product) => (
                     <div key={product.slug || product.id} onClick={() => handleProductClick(product.slug)} className='cursor-pointer'>
-                      <div className='relative'>
-                        <img src={heart} className='absolute z-1 right-3 top-2 cursor-pointer' alt='Wishlist' />
-                      </div>
-                      <div className='border-1 bg-[#fff] p-3 border-[#e3e3e3] hover:shadow-xl hover:bg-[#fffaf7] hover:scale-105 duration-300'>
+                      
+              <div className='relative bg-white border border-[#e3e3e3] rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 hover:border-[#f48743]'>
                         <img
                           src={product.images && product.images.length > 0 ? product.images[0] : ''}
-                          className='w-[94%] h-[300px] object-contain block m-auto'
+                          className='w-full h-[250px]  transition-transform duration-300 group-hover:scale-105'
                           alt={product.name}
                         />
-                        <div className='bg-[#fff8f3] px-4 py-4'>
-                          <h4 className='text-[20px] font-medium capitalize'>{product.name}</h4>
+                        <div className='bg-[#fff8f3] px-6 py-4'>
+<h4 className="text-[20px] font-medium capitalize truncate w-full" title={product.name}>
+  {product.name}
+</h4>
                           <p className='font-regular text-[18px]'>GP : {product.go_points || 0}</p>
                           <div className='flex mt-2 items-center justify-between'>
                             <div className='flex items-center gap-2'>
@@ -254,11 +286,29 @@ const OurProducts = () => {
                           </div>
                         </div>
                       </div>
+                      
                     </div>
+                    
                   ))
                 )}
+             
               </div>
+                 <div className='pagination'>
+                {totalPages > 1 && (
+  <div className='mt-8 flex justify-center gap-2'>
+    {Array.from({ length: totalPages }, (_, i) => (
+      <button
+        key={i}
+        onClick={() => setCurrentPage(i + 1)}
+        className={`px-3 py-1 border rounded ${currentPage === i + 1 ? 'bg-[#F48643] text-white' : 'bg-white'}`}
+      >
+        {i + 1}
+      </button>
+    ))}
+  </div>
+)}</div>
             </div>
+
 
           </div>
         </div>

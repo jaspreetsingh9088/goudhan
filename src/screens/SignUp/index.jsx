@@ -1,11 +1,41 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
+
 import login from '../../assets/login.jpg';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2'; // Add this at the top
+import { useParams } from 'react-router-dom';
+
 
 
 const SignUp = () => {
+
+  const { referralPhone } = useParams(); // get the referral number from URL
+
+
+
+useEffect(() => {
+  if (referralPhone) {
+    axios.get(`https://mitdevelop.com/goudhan/admin/api/referral-user?phone=${referralPhone}`)
+      .then((res) => {
+        setFormData(prev => ({
+          ...prev,
+          referred_by: referralPhone,
+          referred_name: res.data.name || ''
+        }));
+      })
+      .catch(() => {
+        setFormData(prev => ({
+          ...prev,
+          referred_by: referralPhone,
+          referred_name: 'Not Found'
+        }));
+      });
+  }
+}, [referralPhone]);
+
+
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -18,7 +48,7 @@ const SignUp = () => {
     shop_name: '', 
     pincode: '',
     buyer_type: '', 
-    agree: false
+     agree: false
   });
 
 const handleChange = (e) => {
@@ -105,6 +135,17 @@ const handleChange = (e) => {
       confirmButtonText: 'OK'
     });
   }
+
+  const payload = {
+  ...formData,
+  mrp: 0,
+  discount: 0,
+  goudhan_discount: 0,
+  referred_by: formData.referred_by || null,
+};
+
+
+
 };
 
 
@@ -173,11 +214,47 @@ const handleChange = (e) => {
               </>
             )}
 
-            {formData.role === 'buyer' && (
-              <div className="mt-4">
-                <input id="buyer_type" placeholder="Buyer Type (e.g., wholesaler, retailer)" value={formData.buyer_type} onChange={handleChange} className="border-b p-2 w-full" />
-              </div>
-            )}
+         {formData.role === 'buyer' && (
+  <>
+    <div className="mt-4">
+      <input
+        id="buyer_type"
+        placeholder="Buyer Type (e.g., wholesaler, retailer)"
+        value={formData.buyer_type}
+        onChange={handleChange}
+        className="border-b p-2 w-full"
+      />
+    </div>
+
+    {/* Referral Section */}
+    <div className="mt-4">
+      <input
+        id="referred_by"
+        placeholder="Referred By (Phone Number)"
+        value={formData.referred_by || ''}
+        onChange={(e) => {
+          handleChange(e);
+          if (e.target.value.length === 10) {
+            axios.get(`https://mitdevelop.com/goudhan/admin/api/referral-user?phone=${e.target.value}`)
+              .then((res) => {
+                setFormData(prev => ({ ...prev, referred_name: res.data.name || 'Name Not Found' }));
+              })
+              .catch(() => {
+                setFormData(prev => ({ ...prev, referred_name: 'Name Not Found' }));
+              });
+          } else {
+            setFormData(prev => ({ ...prev, referred_name: '' }));
+          }
+        }}
+        className="border-b p-2 w-full"
+      />
+    </div>
+    {formData.referred_name && (
+      <p className="text-sm text-gray-600 mt-1">Referred by: <strong>{formData.referred_name}</strong></p>
+    )}
+  </>
+)}
+
 
             <div className="mt-4 flex items-center space-x-2">
               <input type="checkbox" id="agree" checked={formData.agree} onChange={handleChange} />
