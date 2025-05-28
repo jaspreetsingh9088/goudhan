@@ -200,33 +200,9 @@ const handleChange = (e) => {
               <div><input id="password_confirmation" type="password" placeholder="Confirm Password" value={formData.password_confirmation} onChange={handleChange} className="border-b p-2 w-full" />
 </div>
              
+             
             </div>
-
-            {/* Conditional Fields */}
-            {formData.role === 'seller' && (
-              <>
-              <div className="mt-4">
-                <input id="shop_name" placeholder="Shop Name" value={formData.shop_name} onChange={handleChange} className="border-b p-2 w-full" />
-              </div>
-              <div className="mt-4">
-                <input id="pincode" placeholder="Pin Code" value={formData.pincode} onChange={handleChange} className="border-b p-2 w-full" />
-              </div>
-              </>
-            )}
-
-         {formData.role === 'buyer' && (
-  <>
-    <div className="mt-4">
-      <input
-        id="buyer_type"
-        placeholder="Buyer Type (e.g., wholesaler, retailer)"
-        value={formData.buyer_type}
-        onChange={handleChange}
-        className="border-b p-2 w-full"
-      />
-    </div>
-
-    {/* Referral Section */}
+{/* Referral Section */}
     <div className="mt-4">
       <input
         id="referred_by"
@@ -252,6 +228,31 @@ const handleChange = (e) => {
     {formData.referred_name && (
       <p className="text-sm text-gray-600 mt-1">Referred by: <strong>{formData.referred_name}</strong></p>
     )}
+            {/* Conditional Fields */}
+            {formData.role === 'seller' && (
+              <>
+              <div className="mt-4">
+                <input id="shop_name" placeholder="Shop Name" value={formData.shop_name} onChange={handleChange} className="border-b p-2 w-full" />
+              </div>
+              <div className="mt-4">
+                <input id="pincode" placeholder="Pin Code" value={formData.pincode} onChange={handleChange} className="border-b p-2 w-full" />
+              </div>
+              </>
+            )}
+
+         {formData.role === 'buyer' && (
+  <>
+    <div className="mt-4">
+      <input
+        id="buyer_type"
+        placeholder="Buyer Type (e.g., wholesaler, retailer)"
+        value={formData.buyer_type}
+        onChange={handleChange}
+        className="border-b p-2 w-full"
+      />
+    </div>
+
+    
   </>
 )}
 

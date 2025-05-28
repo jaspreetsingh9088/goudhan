@@ -188,7 +188,7 @@ const handleLogout = async () => {
 
    const [copied, setCopied] = useState(false);
 
-  const referralLink = `https://goudhan.life/signup/${userData?.referred_by}`;
+  const referralLink = `https://goudhan.life/signup/${userData?.phone_number}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink).then(() => {
