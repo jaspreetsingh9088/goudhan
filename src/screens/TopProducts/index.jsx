@@ -8,7 +8,7 @@ const TopProducts = () => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    axios.get('https://mitdevelop.com/goudhan/admin/api/products/latest')
+    axios.get('https://goudhan.life/admin/api/products/latest')
       .then(res => {
         if (res.data.success) {
           setProducts(res.data.products);
@@ -36,7 +36,7 @@ const TopProducts = () => {
                 <div className='relative'>
                   {product.images?.length > 0 && (
                     <img
-                      src={`https://mitdevelop.com/goudhan/admin/public/storage/${product.images[0].image_path}`}
+                      src={`https://goudhan.life/admin/public/storage/${product.images[0].image_path}`}
                       alt={product.name}
                       className='w-full h-[250px]  transition-transform duration-300 group-hover:scale-105'
                     />

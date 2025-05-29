@@ -11,7 +11,7 @@ const Banner = () => {
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        const response = await axios.get('https://mitdevelop.com/goudhan/admin/api/getBanner');
+        const response = await axios.get('https://goudhan.life/admin/api/getBanner');
         if (response.data && response.data.banners) {
             console.log('Banner Images:', response.data.banners.map(b => b.image)); 
           setBanners(response.data.banners);

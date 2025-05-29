@@ -38,7 +38,6 @@ const AboutUs = () => {
                 <p class="text-[#F48643] text-[18px] mb-3">Our Mission</p>
                 <h2 class=" text-[#292929] text-[42px] font-bold leading-[48px]">Our Mission is to create a platform | framework</h2>
                 <p class=" text-[#292929] mt-4"> That facilitates and promotes product and services based on cow and related allied technologies. The platform will generate huge revenues by collaboration of people, business and technology.
-
 Our single and, focused mission is to always engage our self to commercialise all cow based product and services so that cows are not treated as burden or overload rather as blessings that brings prosperity and happiness to each individuals.</p>
                 </div>
           </div>

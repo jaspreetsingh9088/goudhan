@@ -21,7 +21,7 @@ const fetchSettings = async () => {
   const token = localStorage.getItem('token');
 
   try {
-    const response = await axios.get('https://mitdevelop.com/goudhan/admin/api/settings', {
+    const response = await axios.get('https://goudhan.life/admin/api/settings', {
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
         Accept: 'application/json',
@@ -42,7 +42,7 @@ const fetchSettings = async () => {
       if (!token) return;
 
       try {
-        const response = await axios.get('https://mitdevelop.com/goudhan/admin/api/cart', {
+        const response = await axios.get('https://goudhan.life/admin/api/cart', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -63,7 +63,7 @@ const Footer = () => {
     <div className='bg-[#4D953E] py-2 mt-12 text-white'>
     <div className='max-w-7xl mx-auto px-8 '>
     <div className='grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-3 gap-8'>
-    <div className='col-span-2'><p>Copyright © 2024 Goudhan Store. All Rights Reserved.</p></div>
+    <div className='col-span-2'><p>Copyright © 2025 Goudhan Store. All Rights Reserved.</p></div>
     <div className='flex gap-3 justify-end'>
        <div><img src={facebook} alt='' /></div>
        <div><img src={insta} alt='' /></div>

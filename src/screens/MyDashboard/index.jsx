@@ -48,7 +48,7 @@ const MyDashboard = () => {
        // If your image URL is relative, prepend your base URL here, e.g.:
        const imageUrl = userData.profile_image.startsWith("http")
          ? userData.profile_image
-         : `https://mitdevelop.com/goudhan/admin/storage/app/public/${userData.profile_image}`;
+         : `https://goudhan.life/admin/storage/app/public/${userData.profile_image}`;
    
        setProfileImageUrl(imageUrl);
      } else {
@@ -91,7 +91,7 @@ const MyDashboard = () => {
          }
        }
    
-       const response = await fetch("https://mitdevelop.com/goudhan/admin/api/user/update", {
+       const response = await fetch("https://goudhan.life/admin/api/user/update", {
          method: "POST",
          headers: {
            Authorization: `Bearer ${token}`,
@@ -132,7 +132,7 @@ const MyDashboard = () => {
       }
 
       try {
-        const response = await axios.get('https://mitdevelop.com/goudhan/admin/api/user', {
+        const response = await axios.get('https://goudhan.life/admin/api/user', {
           headers: {
             'Authorization': `Bearer ${token}`, 
             'Accept': 'application/json',
@@ -165,7 +165,7 @@ const handleLogout = async () => {
 
   try {
     const response = await axios.post(
-      'https://mitdevelop.com/goudhan/admin/api/logout',
+      'https://goudhan.life/admin/api/logout',
       {},
       {
         headers: {
@@ -489,7 +489,7 @@ const handleLogout = async () => {
     authUser?.profile_image
       ? authUser.profile_image.startsWith("http")
         ? authUser.profile_image
-        : `https://mitdevelop.com/goudhan/admin/storage/app/public/${authUser.profile_image}`
+        : `https://goudhan.life/admin/storage/app/public/${authUser.profile_image}`
       : myprofile
   }
   alt="Profile"

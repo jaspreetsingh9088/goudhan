@@ -15,7 +15,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://mitdevelop.com/goudhan/admin/api/product/${slug}`);
+        const response = await fetch(`https://goudhan.life/admin/api/product/${slug}`);
         const data = await response.json();
         if (data.success) {
           setProduct(data.product);
@@ -49,7 +49,7 @@ const handleAddToCart = async () => {
   };
 
   try {
-    const response = await fetch('https://mitdevelop.com/goudhan/admin/api/add-to-cart', {
+    const response = await fetch('https://goudhan.life/admin/api/add-to-cart', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ const handleUpdateQuantity = async (newQuantity) => {
   }
 
   try {
-    const response = await fetch(`https://mitdevelop.com/goudhan/admin/api/cart/update/${product.id}`, {
+    const response = await fetch(`https://goudhan.life/admin/api/cart/update/${product.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ const handleUpdateQuantity = async (newQuantity) => {
           <div className='grid grid-cols-1 xl:grid-cols-2 gap-8'>
            <div className='bg-[#fff7f3]'>
   <img
-    src={`https://mitdevelop.com/goudhan/admin/storage/app/public/${product.images[0]?.image_path}`}
+    src={`https://goudhan.life/admin/storage/app/public/${product.images[0]?.image_path}`}
     alt={product.name}
     className='w-[80%] block m-auto'
   />

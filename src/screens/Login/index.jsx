@@ -27,8 +27,8 @@ const handleLogin = async () => {
       : { phone_number: mobileCredentials.phone, otp: mobileCredentials.otp };
 
     const endpoint = mode === 'email'
-      ? 'https://mitdevelop.com/goudhan/admin/api/login'
-      : 'https://mitdevelop.com/goudhan/admin/api/verify-otp';
+      ? 'https://goudhan.life/admin/api/login'
+      : 'https://goudhan.life/admin/api/verify-otp';
 
     const response = await axios.post(endpoint, payload);
 
@@ -66,7 +66,7 @@ const handleLogin = async () => {
     setError('');
     setLoading(true);
     try {
-      const response = await axios.post('https://mitdevelop.com/goudhan/admin/api/send-otp', {
+      const response = await axios.post('https://goudhan.life/admin/api/send-otp', {
         phone_number: mobileCredentials.phone,
       });
 

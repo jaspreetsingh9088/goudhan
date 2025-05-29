@@ -39,7 +39,7 @@ useEffect(() => {
 
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch("https://mitdevelop.com/goudhan/admin/api/seller-products", {
+      const response = await fetch("https://goudhan.life/admin/api/seller-products", {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
@@ -69,7 +69,7 @@ useEffect(() => {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch("https://mitdevelop.com/goudhan/admin/api/logout", {
+      const res = await fetch("https://goudhan.life/admin/api/logout", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -162,7 +162,7 @@ const handleSubmit = async (e) => {
       }
     }
 
-    const response = await fetch("https://mitdevelop.com/goudhan/admin/api/create", {
+    const response = await fetch("https://goudhan.life/admin/api/create", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -225,7 +225,7 @@ const handleSubmit = async (e) => {
 useEffect(() => {
   const token = localStorage.getItem("token");
 
-  fetch("https://mitdevelop.com/goudhan/admin/api/seller-categories", {
+  fetch("https://goudhan.life/admin/api/seller-categories", {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
@@ -291,7 +291,7 @@ const openEditProfileModal = () => {
     // If your image URL is relative, prepend your base URL here, e.g.:
     const imageUrl = userData.profile_image.startsWith("http")
       ? userData.profile_image
-      : `https://mitdevelop.com/goudhan/admin/storage/app/public/${userData.profile_image}`;
+      : `https://goudhan.life/admin/storage/app/public/${userData.profile_image}`;
 
     setProfileImageUrl(imageUrl);
   } else {
@@ -334,7 +334,7 @@ const handleEditSubmit = async (e) => {
       }
     }
 
-    const response = await fetch("https://mitdevelop.com/goudhan/admin/api/user/update", {
+    const response = await fetch("https://goudhan.life/admin/api/user/update", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -410,7 +410,7 @@ const handleUpdateProduct = async (e, productId) => {
 
     formData.append("_method", "PUT");
 
-    const response = await fetch(`https://mitdevelop.com/goudhan/admin/api/products/${productId}`, {
+    const response = await fetch(`https://goudhan.life/admin/api/products/${productId}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -456,7 +456,7 @@ const handleUpdateProduct = async (e, productId) => {
               <div className="flex items-center gap-12 bg-[#fff]  -top-10 w-[100%] z py-5 pt-0 px-6 rounded-lg items-end">
                 <div>
                   <img
-                   src={myprofile ? `https://mitdevelop.com/goudhan/admin/storage/app/public/${myprofile}` : defaultProfile}
+                   src={myprofile ? `https://goudhan.life/admin/storage/app/public/${myprofile}` : defaultProfile}
                     alt="Seller"
                     className="rounded-full border-3 border-[#fff] w-30 h-30 object-cover relative bottom-30"
                   />

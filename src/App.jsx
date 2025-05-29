@@ -32,9 +32,10 @@ function Home() {
     <Banner/>
     <TopProducts/>
     <Pictures/>
-    <OurPromises/>
-    <OurStory/>
     <VisitOur/>
+    
+    <OurStory/>
+    <OurPromises/>
     <LatestBlog/>
     <Testimonial/>
     <Footerimage/>

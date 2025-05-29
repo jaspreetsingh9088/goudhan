@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 const OurStory = () => {
   return (
     <>
-    <section className='our-story'>
+    <section className='our-story mt-12 mb-12'>
         <div className='max-w-7xl mx-auto px-8 mt-16'>
             <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 gap-8 items-center'>
             <div>

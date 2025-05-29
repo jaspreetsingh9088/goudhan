@@ -12,7 +12,7 @@ const AddToCart = () => {
   const userId = user?.id;
 
   const fetchCart = () => {
-    axios.get('https://mitdevelop.com/goudhan/admin/api/cart', {
+    axios.get('https://goudhan.life/admin/api/cart', {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
@@ -32,7 +32,7 @@ const AddToCart = () => {
   }, []);
 
   const updateQuantity = (productId, quantity) => {
-    axios.put(`https://mitdevelop.com/goudhan/admin/api/cart/update/${productId}`,
+    axios.put(`https://goudhan.life/admin/api/cart/update/${productId}`,
       { quantity },
       {
         headers: {
@@ -47,7 +47,7 @@ const AddToCart = () => {
 
   const removeFromCart = async (productId) => {
     try {
-      const response = await fetch(`https://mitdevelop.com/goudhan/admin/api/cart/${userId}/${productId}`, {
+      const response = await fetch(`https://goudhan.life/admin/api/cart/${userId}/${productId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -68,7 +68,7 @@ const AddToCart = () => {
   const updateDeliveryMethod = async (productId, method) => {
     try {
       await axios.post(
-        'https://mitdevelop.com/goudhan/admin/api/cart/update-delivery-method',
+        'https://goudhan.life/admin/api/cart/update-delivery-method',
         { product_id: productId, delivery_method: method },
         {
           headers: {
@@ -136,7 +136,7 @@ const AddToCart = () => {
                           <img
                             src={
                               item.product?.images?.[0]?.image_path
-                                ? `https://mitdevelop.com/goudhan/admin/storage/app/public/${item.product.images[0].image_path}`
+                                ? `https://goudhan.life/admin/storage/app/public/${item.product.images[0].image_path}`
                                 : 'https://via.placeholder.com/150'
                             }
                             alt={item.product?.name}

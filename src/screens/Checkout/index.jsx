@@ -15,7 +15,7 @@ const Checkout = () => {
 
     const token = localStorage.getItem("token");
     axios
-      .get("https://mitdevelop.com/goudhan/admin/api/cart", {
+      .get("https://goudhan.life/admin/api/cart", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -69,7 +69,7 @@ const Checkout = () => {
       const token = localStorage.getItem("token");
       // Call your Laravel API to create Razorpay order
       const orderResponse = await axios.post(
-        "https://mitdevelop.com/goudhan/admin/api/payment/create-order",
+        "https://goudhan.life/admin/api/payment/create-order",
         { amount: total },
         { headers: { Authorization: `Bearer ${token}` } }
       );

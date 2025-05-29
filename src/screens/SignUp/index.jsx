@@ -17,7 +17,7 @@ const SignUp = () => {
 
 useEffect(() => {
   if (referralPhone) {
-    axios.get(`https://mitdevelop.com/goudhan/admin/api/referral-user?phone=${referralPhone}`)
+    axios.get(`https://goudhan.life/admin/api/referral-user?phone=${referralPhone}`)
       .then((res) => {
         setFormData(prev => ({
           ...prev,
@@ -101,7 +101,7 @@ const handleChange = (e) => {
       goudhan_discount: 0
     };
 
-    const response = await axios.post('https://mitdevelop.com/goudhan/admin/api/register', payload);
+    const response = await axios.post('https://goudhan.life/admin/api/register', payload);
     console.log("Registration successful:", response.data);
 
     const { token } = response.data;
@@ -211,7 +211,7 @@ const handleChange = (e) => {
         onChange={(e) => {
           handleChange(e);
           if (e.target.value.length === 10) {
-            axios.get(`https://mitdevelop.com/goudhan/admin/api/referral-user?phone=${e.target.value}`)
+            axios.get(`https://goudhan.life/admin/api/referral-user?phone=${e.target.value}`)
               .then((res) => {
                 setFormData(prev => ({ ...prev, referred_name: res.data.name || 'Name Not Found' }));
               })
