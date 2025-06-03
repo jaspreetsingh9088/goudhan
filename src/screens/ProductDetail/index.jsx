@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useParams, useNavigate } from 'react-router-dom';
 
 const ProductDetail = () => {
-  const { slug } = useParams(); // Get slug from URL
+  const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
-  const navigate = useNavigate(); // Initialize navigate
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [userReview, setUserReview] = useState({ rating: 0, comment: '' });
+  const navigate = useNavigate();
 
-  const increment = () => setQuantity(prev => prev + 1);
-  const decrement = () => {
-    if (quantity > 1) setQuantity(prev => prev - 1);
-  };
-
+  // Fetch product details
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -19,6 +18,8 @@ const ProductDetail = () => {
         const data = await response.json();
         if (data.success) {
           setProduct(data.product);
+          fetchRelatedProducts(data.product.category_id);
+          fetchReviews(data.product.id);
         }
       } catch (error) {
         console.error('Failed to fetch product:', error);
@@ -27,186 +28,331 @@ const ProductDetail = () => {
     fetchProduct();
   }, [slug]);
 
-const handleAddToCart = async () => {
-  const token = localStorage.getItem('token');
+  // Fetch related products
+  const fetchRelatedProducts = async (categoryId) => {
+    try {
+        const response = await fetch(`https://goudhan.life/admin/api/products/category/${categoryId}?limit=4`);
+        const data = await response.json();
+        console.log('Related Products API Response:', data); // Debug log
+        if (data.success) {
+            const filteredProducts = data.products.filter(p => p.slug !== slug);
+            console.log('Filtered Related Products:', filteredProducts);
+            setRelatedProducts(filteredProducts);
+        }
+    } catch (error) {
+        console.error('Failed to fetch related products:', error);
+    }
+};
 
-  if (!token) {
-    alert('Please log in to add products to your cart.');
-    return;
-  }
-
-  if (!product || quantity < 1) {
-    alert('Invalid product or quantity');
-    return;
-  }
-
-  const total_price = (parseFloat(product.selling_price) * quantity).toFixed(2); // total_price should be a string if your DB uses varchar
-
-  const cartData = {
-    product_id: product.id,
-    quantity: quantity,
-    total_price: total_price,
+  // Fetch reviews
+  const fetchReviews = async (productId) => {
+    try {
+      const response = await fetch(`https://goudhan.life/admin/api/reviews/${productId}`);
+      const data = await response.json();
+      if (data.success) {
+        setReviews(data.reviews);
+      }
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error);
+    }
   };
 
-  try {
-    const response = await fetch('https://goudhan.life/admin/api/add-to-cart', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(cartData),
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      navigate('/cart');
-    } else {
-      alert(data.message || 'Failed to add product to cart');
-      console.log('Failed to add product to cart:', data);
-    }
-  } catch (error) {
-    console.error('Error adding product to cart:', error);
-    alert('An error occurred. Please try again.');
-  }
-};
-
-
-const handleUpdateQuantity = async (newQuantity) => {
-  if (newQuantity < 1) return; // Prevent invalid update
-
-  setQuantity(newQuantity); // Update UI immediately
-
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert('Please log in to update your cart.');
-    return;
-  }
-
-  try {
-    const response = await fetch(`https://goudhan.life/admin/api/cart/update/${product.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ quantity: newQuantity }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok && data.message === 'Cart updated successfully') {
-      console.log('Cart updated successfully:', data);
-      // Optionally show a toast or message
-    } else {
-      console.log('Failed to update cart:', data.message || 'Unknown error');
-    }
-  } catch (error) {
-    console.error('Error updating cart:', error);
-  }
-};
-
-  if (!product) return <div className='text-center py-10'>Loading product...</div>;
-
-  return (
-    <>
-      <section className='single-product'>
-        <div className='border-t'>
-          <div className='flex gap-3 max-w-7xl mx-auto px-8 py-2 pt-5'>
-            <div><p className='text-[18px]'>Home</p></div>
-            <div><p className='text-[18px]'>|</p></div>
-            <div><p className='text-[#818181] text-[18px]'>{product.name}</p></div>
-          </div>
-        </div>
-
-        <div className='max-w-7xl mx-auto px-8'>
-          <div className='grid grid-cols-1 xl:grid-cols-2 gap-8'>
-           <div className='bg-[#fff7f3]'>
-  <img
-    src={`https://goudhan.life/admin/storage/app/public/${product.images[0]?.image_path}`}
-    alt={product.name}
-    className='w-[80%] block m-auto'
-  />
-</div>
-
-<div>
-  <div className='flex items-center gap-2 mb-5'>
-    <p className='bg-[#F48643] w-fit font-medium text-white px-3 text-[18px] rounded'>
-      {product.discount}% Off
-    </p>
-    <p className={`w-fit font-medium text-[18px] px-3 rounded ${
-      product.quantity > 0 ? 'bg-[#ddebdb] text-[#4d953e]' : 'bg-[#f8d7da] text-[#721c24]'
-    }`}>
-      {product.quantity > 0 ? 'In Stock' : 'Out of Stock'}
-    </p>
-  </div>
-
-  <h2 className='text-[38px] font-bold text-[#194a33]'>{product.name}</h2>
-
-  <div className='flex items-center gap-2 '>
-    <div><p className='text-[32px] text-[#292929] pt-3 pb-3'>₹{parseFloat(product.selling_price).toFixed(2)}</p></div>
-    <div><p className='text-[32px] text-[#F48643] pt-3 pb-3'><del>₹{parseFloat(product.marked_price).toFixed(2)}</del></p></div>
-  </div>
-
-  <p className='border-t py-3 border-gray-300 text-[#3b3b3b] mb-5'>
-    {product.description}
-  </p>
-
-
-              {/* Quantity Selector */}
-              <div className='flex items-center gap-4 mb-5'>
-                <span className='text-[18px] font-medium text-[#292929]'>Quantity:</span>
-                <div className='flex items-center bg-white border border-[#bebebe] overflow-hidden'>
-                 <button
-  onClick={() => {
-    const newQty = quantity - 1;
-    if (newQty >= 1) {
+  // Handle quantity increment/decrement
+  const increment = () => {
+    const newQty = quantity + 1;
+    setQuantity(newQty);
+    handleUpdateQuantity(newQty);
+  };
+  const decrement = () => {
+    if (quantity > 1) {
+      const newQty = quantity - 1;
+      setQuantity(newQty);
       handleUpdateQuantity(newQty);
     }
-  }}
-  className='px-3 py-1 text-xl border-r border-[#bebebe] text-black hover:bg-[#fff7f3] hover:text-[#292929] duration-150'
->
-  -
-</button>
+  };
 
-<span className='px-4 text-lg'>{quantity}</span>
+  // Handle add to cart
+  const handleAddToCart = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to add products to your cart.');
+      return;
+    }
+    if (!product || quantity < 1) {
+      alert('Invalid product or quantity');
+      return;
+    }
+    const total_price = (parseFloat(product.selling_price) * quantity).toFixed(2);
+    const cartData = {
+      product_id: product.id,
+      quantity: quantity,
+      total_price: total_price,
+    };
+    try {
+      const response = await fetch('https://goudhan.life/admin/api/add-to-cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(cartData),
+      });
+      const data = await response.json();
+      if (data.success) {
+        navigate('/cart');
+      } else {
+        alert(data.message || 'Failed to add product to cart');
+      }
+    } catch (error) {
+      console.error('Error adding product to cart:', error);
+      alert('An error occurred. Please try again.');
+    }
+  };
 
-<button
-  onClick={() => {
-    const newQty = quantity + 1;
-    handleUpdateQuantity(newQty);
-  }}
-  className='px-3 py-1 text-xl border-l border-[#bebebe] text-black hover:bg-[#fff7f3] hover:text-[#292929] duration-150'
->
-  +
-</button>
+  // Handle quantity update
+  const handleUpdateQuantity = async (newQuantity) => {
+    if (newQuantity < 1) return;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to update your cart.');
+      return;
+    }
+    try {
+      const response = await fetch(`https://goudhan.life/admin/api/cart/update/${product.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+      const data = await response.json();
+      if (response.ok && data.message === 'Cart updated successfully') {
+        console.log('Cart updated successfully:', data);
+      } else {
+        console.log('Failed to update cart:', data.message || 'Unknown error');
+      }
+    } catch (error) {
+      console.error('Error updating cart:', error);
+    }
+  };
 
-                </div>
-              </div>
+  // Handle review submission
+ const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Please log in to submit a review.');
+        return;
+    }
+    if (userReview.rating < 1 || userReview.rating > 5) {
+        alert('Please select a valid rating (1-5).');
+        return;
+    }
+    try {
+        const response = await fetch(`https://goudhan.life/admin/api/reviews/${product.id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(userReview),
+        });
+        const data = await response.json();
+        if (data.success) {
+            setReviews([...reviews, { ...userReview, created_at: new Date().toISOString() }]);
+            setUserReview({ rating: 0, comment: '' });
+            alert('Review submitted successfully!');
+        } else {
+            alert(data.message || 'Failed to submit review');
+        }
+    } catch (error) {
+        console.error('Error submitting review:', error);
+        alert('An error occurred. Please try again.');
+    }
+};
 
-              <button
-                onClick={handleAddToCart} // Trigger the add to cart action
-                className='w-full flex justify-center gap-3 font-semibold hover:shadow-lg py-2 text-[#fff] hover:bg-[#F48643] hover:text-[#fff] bg-[#F48643] duration-150'
-              >
-                Add To Cart
-              </button>
-            </div>
+  if (!product) return <div className="text-center py-20 text-gray-600 text-xl">Loading product...</div>;
+
+  return (
+    <section className="bg-gray-50 min-h-screen py-10">
+      {/* Breadcrumb */}
+      <div className="border-t border-gray-200">
+        <div className="flex items-center gap-3 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <a href="/" className="text-lg text-gray-800 hover:text-orange-500 transition">Home</a>
+          <span className="text-lg text-gray-400">/</span>
+          <span className="text-lg text-gray-500">{product.name}</span>
+        </div>
+      </div>
+
+      {/* Main Product Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* Product Image */}
+          <div className="bg-white rounded-lg shadow-lg p-6 flex justify-center items-center">
+            <img
+              src={`https://goudhan.life/admin/storage/app/public/${product.images[0]?.image_path}`}
+              alt={product.name}
+              className="w-full max-w-md object-contain rounded-lg transition-transform duration-300 hover:scale-105"
+            />
           </div>
 
-          {/* Product description */}
-          <div className='productdes'>
-            <div className='grid grid-cols-1 xl:grid-cols-1'>
-              <h3 className='bg-[#4c953e1c] px-5 py-1 mt-5 text-[24px] font-bold text-[#4d953e] px-5 w-fit'>Description</h3>
-              <div className='border border-[#ebebeb]  p-5'>
-                <h2 className='text-[24px] font-bold border-[#f48643]'>Product Detail</h2>
-                <p className='pt-2'>{product.description}</p>
+          {/* Product Details */}
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center gap-3">
+              <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                {product.discount}% Off
+              </span>
+              <span
+                className={`px-4 py-1 rounded-full text-sm font-semibold ${
+                  product.quantity > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                }`}
+              >
+                {product.quantity > 0 ? 'In Stock' : 'Out of Stock'}
+              </span>
+            </div>
+
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800">{product.name}</h2>
+
+            <div className="flex items-center gap-4">
+              <p className="text-2xl font-semibold text-gray-900">₹{parseFloat(product.selling_price).toFixed(2)}</p>
+              <p className="text-xl text-gray-500 line-through">₹{parseFloat(product.marked_price).toFixed(2)}</p>
+            </div>
+
+            <p className="text-gray-600 leading-relaxed">{product.description}</p>
+
+            {/* Quantity Selector */}
+            <div className="flex items-center gap-4">
+              <span className="text-lg font-medium text-gray-800">Quantity:</span>
+              <div className="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden">
+                <button
+                  onClick={decrement}
+                  className="px-4 py-2 text-xl text-gray-700 hover:bg-orange-50 transition"
+                  disabled={quantity <= 1}
+                >
+                  -
+                </button>
+                <span className="px-6 py-2 text-lg text-gray-800">{quantity}</span>
+                <button
+                  onClick={increment}
+                  className="px-4 py-2 text-xl text-gray-700 hover:bg-orange-50 transition"
+                >
+                  +
+                </button>
               </div>
             </div>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-shadow hover:shadow-lg"
+              disabled={product.quantity === 0}
+            >
+              {product.quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
+            </button>
           </div>
         </div>
-      </section>
-    </>
+
+        {/* Product Description */}
+        <div className="mt-12">
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">Product Description</h3>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <p className="text-gray-600 leading-relaxed">{product.description}</p>
+          </div>
+        </div>
+
+ <div className="mt-12">
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">Related Products</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+  
+  {relatedProducts.length > 0 ? (
+    relatedProducts.map((related) => (
+      <div
+        key={related.id}
+        className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition cursor-pointer"
+        onClick={() => navigate(`/product/${related.slug}`)}
+      >
+        {related.images && related.images.length > 0 ? (
+          <img
+            src={related.images[0]} // Use direct URL from API
+            alt={related.name}
+            className="w-full h-40 object-cover rounded-lg mb-4"
+          />
+        ) : (
+          <div className="w-full h-40 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
+            <span className="text-gray-500">No Image Available</span>
+          </div>
+        )}
+        <h4 className="text-lg font-semibold text-gray-800">{related.name}</h4>
+        <p className="text-gray-600">₹{parseFloat(related.selling_price).toFixed(2)}</p>
+      </div>
+    ))
+  ) : (
+    <p className="text-gray-500">No related products found.</p>
+  )}
+</div>
+</div>
+        {/* User Reviews */}
+        <div className="mt-12">
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">Customer Reviews</h3>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            {reviews.length > 0 ? (
+              reviews.map((review, index) => (
+                <div key={index} className="border-b border-gray-200 py-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-yellow-500">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                    <span className="text-sm text-gray-500">
+                      {new Date(review.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-gray-600">{review.comment}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">No reviews yet. Be the first to review this product!</p>
+            )}
+          </div>
+        </div>
+
+        {/* Review Form */}
+        <div className="mt-12">
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">Write a Review</h3>
+          <form onSubmit={handleReviewSubmit} className="bg-white p-6 rounded-lg shadow-md">
+            <div className="mb-4">
+              <label className="block text-gray-700 font-medium mb-2">Rating</label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setUserReview({ ...userReview, rating: star })}
+                    className={`text-2xl ${star <= userReview.rating ? 'text-yellow-500' : 'text-gray-300'}`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 font-medium mb-2">Your Review</label>
+              <textarea
+                value={userReview.comment}
+                onChange={(e) => setUserReview({ ...userReview, comment: e.target.value })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                rows="4"
+                placeholder="Share your thoughts about the product..."
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              className="bg-orange-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-orange-600 transition"
+            >
+              Submit Review
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
   );
 };
 

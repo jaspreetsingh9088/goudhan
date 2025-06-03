@@ -57,7 +57,7 @@ const VisitOur = () => {
             Connect With Us
           </p>
           <h2 className="text-[#292929] text-4xl sm:text-5xl font-bold leading-tight mt-4">
-            Experience the Magic of Our Dairy Farm
+            Experience the Magic of Our Gaushala
           </h2>
           <p className="text-gray-600 text-lg mt-4 max-w-2xl mx-auto">
             Visit us to discover the care and tradition behind our delicious, organic dairy products.

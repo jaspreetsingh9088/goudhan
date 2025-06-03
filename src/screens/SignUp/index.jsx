@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
 
-import login from '../../assets/login.jpg';
+import login from '../../assets/GIRGAU.jpg';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2'; // Add this at the top
 import { useParams } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 
 
@@ -13,6 +14,7 @@ const SignUp = () => {
 
   const { referralPhone } = useParams(); // get the referral number from URL
 
+const [showPassword, setShowPassword] = useState(false);
 
 
 useEffect(() => {
@@ -47,7 +49,7 @@ useEffect(() => {
     role_id: '',
     shop_name: '', 
     pincode: '',
-    buyer_type: '', 
+    // buyer_type: '', 
      agree: false
   });
 
@@ -193,38 +195,80 @@ const handleChange = (e) => {
 </div>
               <div><input id="phone_number" placeholder="Phone Number" value={formData.phone_number} onChange={handleChange} className="border-b p-2 w-full" />
 </div>
-              <div className='col-span-3'><input id="email" placeholder="Email(Optional)" value={formData.email} onChange={handleChange} className="border-b p-2 w-full" />
+              <div className='col-span-3'><input id="email" placeholder="Email" value={formData.email} onChange={handleChange} className="border-b p-2 w-full" />
 </div>
-              <div><input id="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} className="border-b p-2 w-full" />
+             <div className="relative mt-2">
+  <input
+    id="password"
+    type={showPassword ? 'text' : 'password'}
+    placeholder="Password"
+    value={formData.password}
+    onChange={handleChange}
+    className="border-b p-2 w-full pr-10"
+  />
+  <span
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </span>
 </div>
-              <div><input id="password_confirmation" type="password" placeholder="Confirm Password" value={formData.password_confirmation} onChange={handleChange} className="border-b p-2 w-full" />
+
+<div className="relative mt-2">
+  <input
+    id="password_confirmation"
+    type={showPassword ? 'text' : 'password'}
+    placeholder="Confirm Password"
+    value={formData.password_confirmation}
+    onChange={handleChange}
+    className="border-b p-2 w-full pr-10"
+  />
+  <span
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </span>
 </div>
+
              
              
             </div>
 {/* Referral Section */}
-    <div className="mt-4">
-      <input
-        id="referred_by"
-        placeholder="Referred By (Phone Number)"
-        value={formData.referred_by || ''}
-        onChange={(e) => {
-          handleChange(e);
-          if (e.target.value.length === 10) {
-            axios.get(`https://goudhan.life/admin/api/referral-user?phone=${e.target.value}`)
-              .then((res) => {
-                setFormData(prev => ({ ...prev, referred_name: res.data.name || 'Name Not Found' }));
-              })
-              .catch(() => {
-                setFormData(prev => ({ ...prev, referred_name: 'Name Not Found' }));
-              });
-          } else {
-            setFormData(prev => ({ ...prev, referred_name: '' }));
-          }
-        }}
-        className="border-b p-2 w-full"
-      />
-    </div>
+   <div className="mt-4">
+  <label htmlFor="referred_by" className="block text-sm font-medium text-gray-700">
+    Referred By (Phone Number)
+  </label>
+  <input
+    id="referred_by"
+    placeholder="Enter 10-digit phone number"
+    value={formData.referred_by || ''}
+    onChange={(e) => {
+      handleChange(e);
+      if (e.target.value.length === 10) {
+        axios
+          .get(`https://goudhan.life/admin/api/referral-user?phone=${e.target.value}`)
+          .then((res) => {
+            setFormData(prev => ({ ...prev, referred_name: res.data.name || 'Name Not Found' }));
+          })
+          .catch(() => {
+            setFormData(prev => ({ ...prev, referred_name: 'Name Not Found' }));
+          });
+      } else {
+        setFormData(prev => ({ ...prev, referred_name: '' }));
+      }
+    }}
+    className="mt-1 border border-gray-300 rounded-md p-2 w-full text-sm focus:ring-[#4D953E] focus:border-[#4D953E]"
+  />
+  <p className="text-xs text-gray-500 mt-1">Optional – used for referral recognition.</p>
+
+  {formData.referred_name && (
+    <p className="text-sm text-green-600 mt-1">
+      Referred by: <strong>{formData.referred_name}</strong>
+    </p>
+  )}
+</div>
+
     {formData.referred_name && (
       <p className="text-sm text-gray-600 mt-1">Referred by: <strong>{formData.referred_name}</strong></p>
     )}
@@ -240,7 +284,7 @@ const handleChange = (e) => {
               </>
             )}
 
-         {formData.role === 'buyer' && (
+         {/* {formData.role === 'buyer' && (
   <>
     <div className="mt-4">
       <input
@@ -254,7 +298,7 @@ const handleChange = (e) => {
 
     
   </>
-)}
+)} */}
 
 
             <div className="mt-4 flex items-center space-x-2">

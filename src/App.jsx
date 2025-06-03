@@ -33,7 +33,6 @@ function Home() {
     <TopProducts/>
     <Pictures/>
     <VisitOur/>
-    
     <OurStory/>
     <OurPromises/>
     <LatestBlog/>

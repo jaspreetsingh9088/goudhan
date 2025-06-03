@@ -4,7 +4,7 @@ import icon1 from '../../assets/28.png'; // Placeholder for "100% Organic" icon
 import icon2 from '../../assets/29.png';  // Placeholder for "Award Winning Quality" icon
 import icon3 from '../../assets/30.png'; // Placeholder for "Healthy & Nutritious" icon
 import icon4 from '../../assets/31.png';   // Placeholder for "Safe Environment" icon
-import centerImage from '../../assets/18.png'; // Placeholder for the central cow image
+import centerImage from '../../assets/cow-img.png'; // Placeholder for the central cow image
 import icon5 from '../../assets/shape.png'; // Placeholder for the central cow image
 
 

@@ -63,24 +63,19 @@ const fetchSettings = async () => {
   }, []);
 
   
-
- const handleLoginClick = () => {
+const handleLoginClick = () => {
   const token = localStorage.getItem('token');
   const user = localStorage.getItem('user');
 
   if (token && user) {
     const parsedUser = JSON.parse(user);
     const roleId = parsedUser.role_id;
-
-    if (roleId == 2) {
-      navigate('/seller');
-    } else {
-      navigate('/dashboard');
-    }
+    navigate(roleId == 2 ? '/seller' : '/dashboard');
   } else {
     navigate('/Login');
   }
 };
+
 
 
   const toggleMenu = () => {
@@ -103,14 +98,33 @@ const fetchSettings = async () => {
               </div>
             </div>
 
-            <div
-              className="flex gap-2 items-center justify-end cursor-pointer"
-              onClick={handleLoginClick}
-            >
-              <FaUser className="text-white text-lg" />
-                 <span className="text-white">{isAuthenticated ? 'My Account' : 'Login'}</span>
-
-            </div>
+           <div className="flex gap-4 items-center justify-end">
+  {isAuthenticated ? (
+    <div
+      className="flex gap-2 items-center cursor-pointer"
+      onClick={handleLoginClick}
+    >
+      <FaUser className="text-white text-lg" />
+      <span className="text-white">My Account</span>
+    </div>
+  ) : (
+    <>
+      <button
+        onClick={() => navigate('/Login')}
+        className="text-white hover:underline"
+      >
+        Login
+      </button>
+      <span className="text-white">|</span>
+      <button
+        onClick={() => navigate('/signup')}
+        className="text-white hover:underline"
+      >
+        Register
+      </button>
+    </>
+  )}
+</div>
 
           </div>
         </div>
