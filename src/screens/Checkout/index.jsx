@@ -1,3 +1,5 @@
+// 📦 ReactJS: Checkout.js with Instamojo Integration
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -9,7 +11,7 @@ const Checkout = () => {
   const [totalShipping, setTotalShipping] = useState(0);
   const [total, setTotal] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("Credit / Debit Card");
-  const [serviceable, setServiceable] = useState(null); // You can bypass this serviceable check for now
+  const [serviceable, setServiceable] = useState(null);
   const [courierInfo, setCourierInfo] = useState(null);
 
   useEffect(() => {
@@ -37,7 +39,7 @@ const Checkout = () => {
         cartData.forEach((item) => {
           const sellingPrice = parseFloat(item.product.selling_price) || 0;
           const shippingCharge = parseFloat(item.product.shipping_charge) || 0;
-console.log('Selling Price : ',sellingPrice);
+          console.log('Selling Price : ',sellingPrice);
           sub += sellingPrice * item.quantity || 0; // Multiply by quantity
           shipping += shippingCharge * item.quantity || 0; // Multiply by quantity
         });
@@ -52,33 +54,111 @@ console.log('Selling Price : ',sellingPrice);
   }
   }, []);
 
-  const handlePlaceOrder = async () => {
-    if (paymentMethod !== "Credit / Debit Card") {
-      alert("Only card payments are implemented.");
-      return;
-    }
 
-    try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.post("https://goudhan.life/admin/api/create-payment", {
-        total: total,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.data.payment_url) {
-        window.location.href = res.data.payment_url; // Redirect to Instamojo
-      } else {
-        alert("Order creation failed");
+  useEffect(() => {
+    const checkServiceability = async () => {
+      if (!pincode || pincode.length !== 6 || paymentMethod !== "Credit / Debit Card") {
+        setServiceable(false);
+        return;
       }
-    } catch (error) {
-      console.error("Order/payment error", error);
-      alert("Error during checkout.");
+
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const productId = cartItems[0]?.product?.id;
+        if (!productId) return;
+
+        const res = await axios.post(
+          "https://goudhan.life/admin/api/shiprocket/serviceability",
+          { product_id: productId, pincode },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (res.data?.available_courier_companies?.length > 0) {
+          setServiceable(true);
+          const cheapest = res.data.available_courier_companies.reduce((a, b) => a.rate < b.rate ? a : b);
+          setCourierInfo(cheapest);
+        } else {
+          setServiceable(false);
+        }
+      } catch (err) {
+        console.error("Serviceability check failed", err.response?.data || err);
+      }
+    };
+
+    if (cartItems.length > 0) checkServiceability();
+  }, [cartItems, pincode, paymentMethod]);
+
+
+  
+const handlePlaceOrder = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.post("https://goudhan.life/admin/api/create-order", {
+      total,
+      subtotal,
+      shipping_charge: totalShipping,
+      payment_method: paymentMethod,
+      pincode,
+    }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const options = {
+      key: res.data.key,
+      amount: res.data.amount,
+      currency: res.data.currency,
+      name: "Goudhan",
+      description: "Order Payment",
+      order_id: res.data.razorpay_order_id,
+      handler: async function (response) {
+  try {
+    await axios.post("https://goudhan.life/admin/api/verify-payment", {
+      razorpay_order_id: response.razorpay_order_id,
+      razorpay_payment_id: response.razorpay_payment_id,
+      razorpay_signature: response.razorpay_signature,
+      order_id: res.data.order_id,
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // ✅ Clear cart from state (optional visual cleanup)
+    setCartItems([]);
+
+    // ✅ Redirect to success page
+    window.location.href = "/payment-success";
+  } catch (err) {
+    alert("Payment verification failed.");
+  }
+},
+      prefill: {
+        name: user.name,
+        email: user.email,
+        contact: user.phone_number,
+      },
+      theme: {
+        color: "#f68540"
+      }
+    };
+
+    if (typeof window.Razorpay !== "undefined") {
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } else {
+      alert("Razorpay SDK not loaded. Please refresh the page.");
     }
-  };
+
+  } catch (err) {
+    console.error("Order creation/payment failed", err.response?.data || err);
+    alert("Checkout failed");
+  }
+};
+
+
+
+
 
 
   return (
@@ -111,10 +191,8 @@ console.log('Selling Price : ',sellingPrice);
 
         <div>
           <div className="border-2 border-[#cacaca] p-4 rounded-lg shadow-md space-y-4 bg-white">
-            <h2 className="text-2xl font-semibold text-[#f68540] mb-4 rounded-md px-5 py-1">Order Summary</h2>
-      
-      
-  {cartItems.map((item) => (
+            <h2 className="text-2xl font-semibold text-white mb-4 bg-[#f68540] rounded-md px-5 py-1">Order Summary</h2>
+             {cartItems.map((item) => (
   <div key={item.id} className="flex items-center gap-4 pb-4 mb-4 bg-[#f3f4f6] px-5 py-3 rounded-lg">
     <div className="flex-1">
       <h3 className="font-bold text-[20px] text-[#4d953e] capitalize">{item.product.name}</h3>
@@ -126,9 +204,6 @@ console.log('Selling Price : ',sellingPrice);
     </div>
   </div>
 ))}
-
-
-
 
             <div className="border-t pt-4">
               <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
@@ -147,3 +222,4 @@ console.log('Selling Price : ',sellingPrice);
 };
 
 export default Checkout;
+ 

@@ -21,6 +21,7 @@ import ProductDetail from './screens/ProductDetail';
 import Cart from './screens/Cart';
 import AboutUs from './screens/AboutUs';
 import Checkout from './screens/Checkout';
+import PaymentSuccess from './screens/PaymentSuccess';
 import Seller from './screens/Seller';
 
 
@@ -60,6 +61,8 @@ function App() {
         <Route path="/Checkout" element={<Checkout />} />
         <Route path="/Seller" element={<Seller />} />
         <Route path="/signup/:referralPhone?" element={<SignUp />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+
 
       </Routes>
       <Footer />
