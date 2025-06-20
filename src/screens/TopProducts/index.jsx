@@ -1,70 +1,106 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+// import Tilt from 'react-parallax-tilt';
 import cart from '../../assets/cart.svg';
 import heart from '../../assets/heart.svg';
 import axios from 'axios';
 
 const TopProducts = () => {
   const [products, setProducts] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get('https://goudhan.life/admin/api/products/latest')
-      .then(res => {
+    axios
+      .get('https://goudhan.life/admin/api/products/latest')
+      .then((res) => {
         if (res.data.success) {
           setProducts(res.data.products);
+        } else {
+          setError('Failed to load products.');
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Failed to fetch products:', err);
+        setError('Failed to load products. Please try again later.');
       });
   }, []);
 
   return (
-    <section className='py-16 bg-[#fffaf7]'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <div className='text-center'>
-          <h2 className='text-3xl sm:text-4xl font-bold text-[#292929]'>Top Selling Products</h2>
-          <p className='mt-3 text-[#555] text-base sm:text-lg'>
-            Explore our best-selling items, curated to meet your needs with exceptional quality.
+    <section className="py-16 bg-gradient-to-b from-[#FFFAF7] to-[#FFEDE3] relative overflow-hidden">
+      {/* Subtle background glow */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#F48743]/10 to-[#D74A1D]/10 animate-pulse-slow"></div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1A1A1A] font-poppins animate-slide-in-top">
+            Top Selling Products
+          </h2>
+          <p className="mt-4 text-base sm:text-lg text-gray-600 font-poppins max-w-2xl mx-auto animate-slide-in-top delay-100">
+            Discover our best-selling items, crafted with exceptional quality to elevate your experience.
           </p>
         </div>
 
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-14'>
-          {products.map((product) => (
-            <Link to={`/product/${product.slug}`} key={product.id} className='group'>
-              <div className='relative bg-white border border-[#e3e3e3] rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 hover:border-[#f48743]'>
-                <div className='relative'>
-                  {product.images?.length > 0 && (
+        {error ? (
+          <p className="text-center text-red-500 text-lg font-poppins">{error}</p>
+        ) : products.length === 0 ? (
+          <p className="text-center text-gray-600 text-lg font-poppins animate-pulse">Loading products...</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            {products.map((product, index) => (
+               
+                <Link to={`/product/${product.slug}`} className="group block">
+                  <div className="relative bg-white/10 backdrop-blur-lg rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl border border-white/20 transition-all duration-300 hover:-translate-y-1">
+                    {/* Top Seller Badge */}
+                    <span className="absolute top-3 left-3 bg-[#F48743] text-white text-xs font-semibold font-poppins px-3 py-1 rounded-full z-10">
+                      Top Seller
+                    </span>
+                    {/* Favorite Icon */}
                     <img
-                      src={`https://goudhan.life/admin/public/storage/${product.images[0].image_path}`}
-                      alt={product.name}
-                      className='w-full h-[250px]  transition-transform duration-300 group-hover:scale-105'
+                      src={heart}
+                      alt="Add to Favorites"
+                      className="absolute top-3 right-3 w-6 h-6 opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-200 z-10 cursor-pointer"
                     />
-                  )}
-                  {/* <img
-                    src={heart}
-                    alt='Favorite'
-                    className='absolute top-3 right-3 w-5 h-5 opacity-70 hover:opacity-100 transition'
-                  /> */}
-                </div>
-                <div className='px-4 py-5 bg-[#fff8f3]'>
-                  <h4 className='text-lg font-semibold text-gray-800 truncate'>{product.name}</h4>
-                  <p className='text-sm text-gray-600 mb-2'>GP: {product.go_points || 0}</p>
-                  <div className='flex items-center justify-between mt-2'>
-                    <div className='flex items-center gap-2'>
-                      <p className='text-lg font-semibold text-[#333]'>₹{product.selling_price}</p>
-                      <del className='text-sm text-[#F48643]'>₹{product.admin_mrp_price}</del>
+                    {/* Product Image */}
+                    <div className="relative">
+                      {product.images?.length > 0 ? (
+                        <img
+                          src={`https://goudhan.life/admin/public/storage/${product.images[0].image_path}`}
+                          alt={product.name}
+                          className="w-full h-[220px] sm:h-[250px] object-cover rounded-t-3xl transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-[220px] sm:h-[250px] bg-gray-200 rounded-t-3xl flex items-center justify-center">
+                          <span className="text-gray-500 font-poppins">No Image</span>
+                        </div>
+                      )}
                     </div>
-                    <div className='flex items-center gap-1 text-sm text-[#333] cursor-pointer hover:text-[#f48743]'>
-                      <img src={cart} alt='Add to Cart' className='w-5 h-5 hover:scale-110 transition-transform duration-200' />
-                      <span>Cart</span>
+                    {/* Product Details */}
+                    <div className="px-5 py-6 bg-gradient-to-t from-[#4CAF50]/90 to-[#4CAF50]/70">
+                      <h4 className="text-lg sm:text-xl font-semibold text-white font-poppins truncate" title={product.name}>
+                        {product.name}
+                      </h4>
+                      <p className="text-sm text-white/80 font-poppins mt-1">GP: {product.go_points || 0}</p>
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center gap-2">
+                          <p className="text-lg sm:text-xl font-bold text-white font-poppins">₹{product.selling_price}</p>
+                          <del className="text-sm text-white/60 font-poppins">₹{product.admin_mrp_price}</del>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-white font-poppins cursor-pointer group-hover:text-[#F48743] transition-colors duration-200">
+                          <img
+                            src={cart}
+                            alt="Add to Cart"
+                            className="w-6 h-6 group-hover:scale-110 transition-transform duration-200"
+                          />
+                          <span className="font-semibold">Add to Cart</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+                </Link>
+             
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

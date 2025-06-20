@@ -6,6 +6,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
+import GoPoint from '../GoPoint';
 
 const MyDashboard = () => {
     const [error, setError] = useState(null); // Add error state

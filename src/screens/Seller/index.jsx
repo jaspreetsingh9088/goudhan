@@ -9,6 +9,8 @@ import { FiBox } from "react-icons/fi";
 import { FaEdit } from 'react-icons/fa';
 import { FaBriefcase, FaEnvelope, FaBirthdayCake } from "react-icons/fa";
 import { FaMapMarkerAlt } from "react-icons/fa"; 
+import GoPointsSummary from '../../components/GoPointsSummary';
+
 
 
 
@@ -1067,6 +1069,8 @@ const handleUpdateProduct = async (e, productId) => {
       <div>
         <h2 className="text-xl font-semibold mb-2">Additional Information</h2>
         <p>Put any extra seller/shop information or analytics here.</p>
+              <GoPointsSummary />
+
       </div>
     )}
   </div>

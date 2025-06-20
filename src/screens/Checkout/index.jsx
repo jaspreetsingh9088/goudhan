@@ -13,7 +13,8 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("Credit / Debit Card");
   const [serviceable, setServiceable] = useState(null);
   const [courierInfo, setCourierInfo] = useState(null);
-
+const [cgst, setCgst] = useState(0);
+const [igst, setIgst] = useState(0);
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -33,20 +34,34 @@ const Checkout = () => {
         const cartData = res.data.cart || [];
         setCartItems(cartData);
 
-        let sub = 0;
-        let shipping = 0;
+ let sub = 0;
+let shipping = 0;
+let cgstValue = 0;
+let igstValue = 0;
 
-        cartData.forEach((item) => {
-          const sellingPrice = parseFloat(item.product.selling_price) || 0;
-          const shippingCharge = parseFloat(item.product.shipping_charge) || 0;
-          console.log('Selling Price : ',sellingPrice);
-          sub += sellingPrice * item.quantity || 0; // Multiply by quantity
-          shipping += shippingCharge * item.quantity || 0; // Multiply by quantity
-        });
+cartData.forEach((item) => {
+  const sellingPrice = parseFloat(item.product.selling_price) || 0;
+  const shippingCharge = parseFloat(item.product.shipping_charge) || 0;
+  const quantity = item.quantity || 1;
 
-        setSubtotal(sub);
-        setTotalShipping(shipping);
-        setTotal(sub + shipping);
+  const cgstPercent = parseFloat(item.product.cgst) || 0;
+  const sgstPercent = parseFloat(item.product.sgst) || 0;
+
+  const itemCgst = (sellingPrice * cgstPercent / 100) * quantity;
+  const itemSgst = (sellingPrice * sgstPercent / 100) * quantity;
+
+  sub += sellingPrice * quantity;
+  shipping += shippingCharge * quantity;
+  cgstValue += itemCgst;
+  igstValue += itemSgst;
+});
+
+setSubtotal(sub);
+setTotalShipping(shipping);
+setCgst(cgstValue);
+setIgst(igstValue);
+setTotal(sub + shipping + cgstValue + igstValue);
+
       })
       .catch((err) => console.error("Error fetching cart:", err));
   } else {
@@ -192,24 +207,50 @@ const handlePlaceOrder = async () => {
         <div>
           <div className="border-2 border-[#cacaca] p-4 rounded-lg shadow-md space-y-4 bg-white">
             <h2 className="text-2xl font-semibold text-white mb-4 bg-[#f68540] rounded-md px-5 py-1">Order Summary</h2>
-             {cartItems.map((item) => (
-  <div key={item.id} className="flex items-center gap-4 pb-4 mb-4 bg-[#f3f4f6] px-5 py-3 rounded-lg">
-    <div className="flex-1">
-      <h3 className="font-bold text-[20px] text-[#4d953e] capitalize">{item.product.name}</h3>
-      <p className="text-[#575555] font-semibold">
-        ₹{item.product.selling_price ? parseFloat(item.product.selling_price).toFixed(2) : '0.00'} × {item.quantity} = ₹{item.product_total ? parseFloat(item.product_total).toFixed(2) : '0.00'}
-      </p>
-      <p className="text-[#575555] font-semibold">Delivery Method: {item.delivery_method}</p>
-      <p>Shipping Charge: ₹{parseFloat(item.product.shipping_charge).toFixed(2)}</p>
-    </div>
-  </div>
-))}
+ {cartItems.map((item) => {
+  const sellingPrice = parseFloat(item.product.selling_price) || 0;
+  const quantity = item.quantity || 1;
 
-            <div className="border-t pt-4">
-              <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span>Shipping</span><span>₹{totalShipping.toFixed(2)}</span></div>
-              <div className="flex justify-between font-bold text-lg mt-2"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
-            </div>
+  const cgstPercent = parseFloat(item.product.cgst) || 0;
+  const sgstPercent = parseFloat(item.product.sgst) || 0;
+
+  const cgstAmount = (sellingPrice * cgstPercent / 100) * quantity;
+  const sgstAmount = (sellingPrice * sgstPercent / 100) * quantity;
+
+  return (
+    <div key={item.id} className="flex items-center gap-4 pb-4 mb-4 bg-[#f3f4f6] px-5 py-3 rounded-lg">
+      <div className="flex-1">
+        <h3 className="font-bold text-[20px] text-[#4d953e] capitalize">{item.product.name}</h3>
+        <p className="text-[#575555] font-semibold">
+          ₹{sellingPrice.toFixed(2)} × {quantity} = ₹{(sellingPrice * quantity).toFixed(2)}
+        </p>
+        <p className="text-[#575555] font-semibold">Delivery Method: {item.delivery_method}</p>
+        <p>Shipping Charge: ₹{parseFloat(item.product.shipping_charge).toFixed(2)}</p>
+
+        {(cgstAmount > 0 || sgstAmount > 0) && (
+          <>
+            {cgstAmount > 0 && (
+              <p className="text-sm text-gray-600">CGST ({cgstPercent}%): ₹{cgstAmount.toFixed(2)}</p>
+            )}
+            {sgstAmount > 0 && (
+              <p className="text-sm text-gray-600">SGST ({sgstPercent}%): ₹{sgstAmount.toFixed(2)}</p>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+})}
+
+
+            <div className="border-t pt-4 space-y-1">
+  <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
+  <div className="flex justify-between"><span>Shipping</span><span>₹{totalShipping.toFixed(2)}</span></div>
+ <div className="flex justify-between"><span>CGST</span><span>₹{cgst.toFixed(2)}</span></div>
+<div className="flex justify-between"><span>SGST</span><span>₹{igst.toFixed(2)}</span></div>
+  <div className="flex justify-between font-bold text-lg mt-2 border-t pt-2"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
+</div>
+
 
             <button onClick={handlePlaceOrder} className="w-full bg-[#f68540] text-white py-2 rounded mt-4">
               Place Order

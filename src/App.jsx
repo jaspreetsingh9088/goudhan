@@ -23,6 +23,8 @@ import AboutUs from './screens/AboutUs';
 import Checkout from './screens/Checkout';
 import PaymentSuccess from './screens/PaymentSuccess';
 import Seller from './screens/Seller';
+import GoPoint from './screens/GoPoint';
+
 
 
 
@@ -62,6 +64,8 @@ function App() {
         <Route path="/Seller" element={<Seller />} />
         <Route path="/signup/:referralPhone?" element={<SignUp />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/go-points" element={<GoPoint />} />
+
 
 
       </Routes>
