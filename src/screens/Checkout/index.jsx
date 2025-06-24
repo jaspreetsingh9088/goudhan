@@ -1,4 +1,3 @@
-// 📦 Updated Checkout.js with Multi-Delivery Methods, Go Points, and Payment Popup
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -17,6 +16,10 @@ const Checkout = () => {
   const [useGoPoints, setUseGoPoints] = useState(false);
   const [goPointsToUse, setGoPointsToUse] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
+  const [isPinServiceable, setIsPinServiceable] = useState(null);
+  const [pinCheckMessage, setPinCheckMessage] = useState("");
+  // New state for lowest-priced courier
+  const [lowestCourier, setLowestCourier] = useState(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -59,7 +62,6 @@ const Checkout = () => {
           setFinalAmount(sub + shipping + cgstValue + igstValue);
         });
 
-      // Fetch Go Points
       axios.get("https://goudhan.life/admin/api/user", {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
@@ -67,6 +69,51 @@ const Checkout = () => {
       });
     }
   }, []);
+
+  // Check PIN code serviceability and find lowest-priced courier
+  useEffect(() => {
+    if (pincode.length === 6 && cartItems.length > 0) {
+      const token = localStorage.getItem("token");
+      const productId = cartItems[0]?.product?.id;
+
+      if (token && productId) {
+        axios
+          .post(
+            "https://goudhan.life/admin/api/shiprocket/serviceability",
+            { product_id: productId, pincode },
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+          .then((res) => {
+            const data = res.data;
+            if (data.status === 200 && data.data?.available_courier_companies?.length > 0) {
+              setIsPinServiceable(true);
+              setPinCheckMessage("Delivery available to this PIN code!");
+              // Find the courier with the lowest freight_charge
+              const couriers = data.data.available_courier_companies;
+              const lowest = couriers.reduce((min, courier) => {
+                const freight = parseFloat(courier.freight_charge);
+                return !min || freight < parseFloat(min.freight_charge) ? courier : min;
+              }, null);
+              setLowestCourier(lowest);
+            } else {
+              setIsPinServiceable(false);
+              setPinCheckMessage("Sorry, delivery is not available to this PIN code.");
+              setLowestCourier(null);
+            }
+          })
+          .catch((err) => {
+            console.error("PIN code check failed", err);
+            setIsPinServiceable(false);
+            setPinCheckMessage("Failed to check PIN code availability.");
+            setLowestCourier(null);
+          });
+      }
+    } else {
+      setIsPinServiceable(null);
+      setPinCheckMessage("");
+      setLowestCourier(null);
+    }
+  }, [pincode, cartItems]);
 
   const calculateFinalAmount = () => {
     let amount = total;
@@ -85,6 +132,10 @@ const Checkout = () => {
   }, [useGoPoints, goPointsToUse, total]);
 
   const handlePlaceOrder = async () => {
+    if (!isPinServiceable) {
+      return alert("Please enter a valid, serviceable PIN code.");
+    }
+
     if (useGoPoints && goPointsToUse > goPoints) {
       return alert("You don't have enough Go Points");
     }
@@ -111,7 +162,9 @@ const Checkout = () => {
         items: cartItems.map(item => ({
           id: item.id,
           delivery_method: item.delivery_method
-        }))
+        })),
+        // Include the selected courier
+        courier_company_id: lowestCourier?.courier_company_id
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -152,7 +205,6 @@ const Checkout = () => {
         const razorpay = new window.Razorpay(options);
         razorpay.open();
       } else {
-        // Wire Transfer or Cash
         alert("Order placed successfully. Payment status: Pending");
         setCartItems([]);
         window.location.href = "/payment-success";
@@ -177,15 +229,22 @@ const Checkout = () => {
             <input type="email" value={user.email || ""} readOnly className="w-full rounded p-2 bg-gray-100" />
             <input type="text" value={user.phone_number || ""} readOnly className="w-full rounded p-2 bg-gray-100" />
             <textarea value={user.address || ""} readOnly className="w-full rounded p-2 bg-gray-100" />
-            <input 
-              type="text" 
-              value={pincode} 
-              onChange={(e) => setPincode(e.target.value)} 
-              placeholder="Enter pincode"
-              className="w-full rounded p-2 border" 
-            />
+            <div>
+              <input 
+                type="text" 
+                value={pincode} 
+                onChange={(e) => setPincode(e.target.value)} 
+                placeholder="Enter 6-digit pincode"
+                maxLength={6}
+                className="w-full rounded p-2 border" 
+              />
+              {pinCheckMessage && (
+                <p className={`mt-1 ${isPinServiceable ? "text-green-600" : "text-red-600"}`}>
+                  {pinCheckMessage}
+                </p>
+              )}
+            </div>
             
-            {/* Go Points Section */}
             <div className="border-t pt-4">
               <h3 className="text-xl font-semibold mb-2">Go Points</h3>
               <div className="flex items-center mb-2">
@@ -252,7 +311,12 @@ const Checkout = () => {
             })}
             <div className="border-t pt-4 space-y-1">
               <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span>Shipping</span><span>₹{totalShipping.toFixed(2)}</span></div>
+              {lowestCourier && (
+                <div className="flex justify-between">
+                  <span>Shipping ({lowestCourier.courier_name})</span>
+                  <span>₹{parseFloat(lowestCourier.freight_charge).toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between"><span>CGST</span><span>₹{cgst.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>SGST</span><span>₹{igst.toFixed(2)}</span></div>
               {useGoPoints && (
@@ -268,7 +332,12 @@ const Checkout = () => {
             </div>
             <button 
               onClick={handlePlaceOrder} 
-              className="w-full bg-[#f68540] text-white py-2 rounded mt-4 hover:bg-[#e07636]"
+              disabled={isPinServiceable === false || !pincode || pincode.length !== 6}
+              className={`w-full py-2 rounded mt-4 text-white ${
+                isPinServiceable === false || !pincode || pincode.length !== 6
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#f68540] hover:bg-[#e07636]"
+              }`}
             >
               Place Order
             </button>
@@ -276,7 +345,6 @@ const Checkout = () => {
         </div>
       </div>
 
-      {/* Payment Method Popup */}
       {showPaymentPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg w-full max-w-md">
@@ -320,7 +388,6 @@ const Checkout = () => {
               </div>
             </div>
             
-            {/* Payment Details */}
             {selectedPaymentOption === "Wire Transfer" && (
               <div className="bg-yellow-50 p-4 rounded-lg mb-4">
                 <h4 className="font-bold mb-2">Bank Transfer Details:</h4>

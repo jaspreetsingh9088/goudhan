@@ -21,6 +21,8 @@ const [expandedOrders, setExpandedOrders] = useState({});
   const [profileImageUrl, setProfileImageUrl] = useState(null);
  const [orders, setOrders] = useState([]);
   const [copied, setCopied] = useState(false);
+  const [alreadyTriedLogout, setAlreadyTriedLogout] = useState(false);
+ 
 
   const [editForm, setEditForm] = useState({
     name: '',
@@ -86,18 +88,18 @@ fetchOrders();
 
   }, [navigate]);
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    const token = localStorage.getItem('token');
 
-    if (!token) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      navigate('/login');
-      return;
-    }
 
-    try {
+const handleLogout = async () => {
+  if (alreadyTriedLogout || isLoggingOut) return; // ✅ prevent multiple calls
+
+  setAlreadyTriedLogout(true);
+  setIsLoggingOut(true);
+
+  const token = localStorage.getItem('token');
+
+  try {
+    if (token) {
       await axios.post(
         'https://goudhan.life/admin/api/logout',
         {},
@@ -105,18 +107,21 @@ fetchOrders();
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
-          },
+          }
         }
       );
-    } catch (error) {
-      console.error('Logout error:', error.response?.data || error.message);
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      navigate('/login');
-      setIsLoggingOut(false);
     }
-  };
+  } catch (error) {
+    console.error('Logout error:', error.response?.data || error.message);
+  } finally {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+    setIsLoggingOut(false);
+  }
+};
+
+
 
   const openEditProfileModal = () => {
     const userData = JSON.parse(localStorage.getItem('user')) || {};
