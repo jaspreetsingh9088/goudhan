@@ -99,7 +99,7 @@ const Banner = () => {
 
  
   return (
-  <section className="bg-[#dc733b] py-4 relative overflow-hidden">
+  <section className="py-4 relative overflow-hidden">
     <div className="max-w-7xl mx-auto px-6 sm:px-10 relative">
       {banners.length > 0 ? (
         <>
@@ -114,28 +114,28 @@ const Banner = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center w-full p-6 lg:p-12 bg-white rounded-2xl">
                     {/* Left content */}
                     <div className="text-center lg:text-left">
-                      <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-[#292929]">
+                      <h2 className="text-4xl md:text-5xl font-extrabold leading-tight text-[#292929]">
                         {banner.title?.split('\n').map((line, i) => (
                           <div key={i}>{line}</div>
                         ))}
-                      </h1>
+                      </h2>
                       <p className="text-base md:text-lg text-[#555] mt-4 leading-relaxed">
                         {banner.description?.split('\n').map((line, i) => (
                           <div key={i}>{line}</div>
                         ))}
                       </p>
 
-                      <div className="flex flex-wrap justify-center lg:justify-start gap-4 mt-5">
+                      {/* <div className="flex flex-wrap justify-center lg:justify-start gap-4 mt-5">
                         {['Handwash', 'Vermicompost', 'Dhupbati'].map((item, i) => (
                           <div key={i} className="flex items-center gap-2 text-sm text-[#292929]">
                             <img src={dot} alt="" className="w-2.5 h-2.5" />
                             <span>{item}</span>
                           </div>
                         ))}
-                      </div>
+                      </div> */}
 
                       <a
-                        href={banner.button_link}
+                        href={banner.link}
                         className="inline-block bg-[#F48643] hover:bg-[#d96c2c] transition duration-300 px-8 py-3 mt-6 text-white rounded-full text-sm font-semibold shadow-md"
                       >
                         {banner.button_text || 'Explore'} &nbsp;→

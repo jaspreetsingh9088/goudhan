@@ -177,7 +177,7 @@ const AddToCart = () => {
                                   type="radio"
                                   name={`delivery_${item.product.id}`}
                                   value={method}
-                                  checked={(item.delivery_method || 'online') === method}
+                                  checked={(item.delivery_method || 'referral') === method}
                                   onChange={() => updateDeliveryMethod(item.product.id, method)}
                                 />
                                 {method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}

@@ -269,9 +269,9 @@ const handleChange = (e) => {
   )}
 </div>
 
-    {formData.referred_name && (
+    {/* {formData.referred_name && (
       <p className="text-sm text-gray-600 mt-1">Referred by: <strong>{formData.referred_name}</strong></p>
-    )}
+    )} */}
             {/* Conditional Fields */}
             {formData.role === 'seller' && (
               <>

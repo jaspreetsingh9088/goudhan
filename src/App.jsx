@@ -34,13 +34,13 @@ function Home() {
     <>
     <Banner/>
     <TopProducts/>
-    <Pictures/>
-    <VisitOur/>
+    {/* <Pictures/> */}
+    {/* <VisitOur/> */}
     <OurStory/>
-    <OurPromises/>
-    <LatestBlog/>
+    {/* <OurPromises/> */}
+    {/* <LatestBlog/> */}
     <Testimonial/>
-    <Footerimage/>
+    {/* <Footerimage/> */}
    
     </>
   );

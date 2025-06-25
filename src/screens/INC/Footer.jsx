@@ -13,22 +13,8 @@ const Footer = () => {
     
     <section className='Footer'>
     <div className='max-w-7xl mx-auto px-8 '>
-    <div class="bg-[#F5F9F4] py-8 px-10 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-4 my-18">
-  <h2 class="text-2xl font-bold text-gray-800 text-[42px]">
-    Get The Latest <span class="text-green-600">Deals</span>
-  </h2>
-  <div class="flex w-full max-w-md bg-[#fff] py-2 px-3">
-    <input
-      type="email"
-      placeholder="Enter Your Email Address"
-      class="flex-1 focus:outline-none placeholder-black"
-    />
-    <button class="bg-green-600 text-white px-6 py-1 font-medium">
-      Subscribe
-    </button>
-  </div>
-</div>
-<div className='grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-4 gap-8'>
+     
+<div className='grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-4 gap-8 py-8'>
     <div >
      <img src={goudhanlogo} alt='' className='mb-4' />
      <p className='mb-4'>We serve with love to uplift society through peace, prosperity, and awareness.</p>
@@ -63,7 +49,7 @@ const Footer = () => {
     <div className='bg-[#4D953E] py-2 mt-12 text-white'>
     <div className='max-w-7xl mx-auto px-8 '>
     <div className='grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-3 gap-8'>
-    <div className='col-span-2'><p>Copyright © 2025 Goudhan Store. All Rights Reserved.</p></div>
+    <div className='col-span-2'><p>Copyright © 2025 goudhan.com. All Rights Reserved.</p></div>
     <div className='flex gap-3 justify-end'>
        <div><img src={facebook} alt='' /></div>
        <div><img src={insta} alt='' /></div>

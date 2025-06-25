@@ -65,61 +65,7 @@ const VisitOur = () => {
         </motion.div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-          {/* Phone Card */}
-          <motion.div
-            className="text-center bg-[#4D953E] p-8 rounded-xl shadow-lg"
-            variants={fadeIn('up', 0.2)}
-            initial="hidden"
-            whileInView="visible"
-            whileHover="hover"
-            viewport={{ once: true }}
-          >
-            <img
-              src={phoneIcon}
-              alt="Phone Icon"
-              className="block mx-auto mb-4 bg-white p-4 rounded-full w-16 h-16"
-            />
-            <h3 className="font-semibold text-xl text-white">Phone</h3>
-            <p className="text-white text-base mt-2">+91 98765 43210</p>
-          </motion.div>
-
-          {/* Email Card */}
-          <motion.div
-            className="text-center bg-[#4D953E] p-8 rounded-xl shadow-lg"
-            variants={fadeIn('up', 0.3)}
-            initial="hidden"
-            whileInView="visible"
-            whileHover="hover"
-            viewport={{ once: true }}
-          >
-            <img
-              src={emailIcon}
-              alt="Email Icon"
-              className="block mx-auto mb-4 bg-white p-4 rounded-full w-16 h-16"
-            />
-            <h3 className="font-semibold text-xl text-white">Email</h3>
-            <p className="text-white text-base mt-2">contact@goudhan.com</p>
-          </motion.div>
-
-          {/* Working Hours Card */}
-          <motion.div
-            className="text-center bg-[#4D953E] p-8 rounded-xl shadow-lg"
-            variants={fadeIn('up', 0.4)}
-            initial="hidden"
-            whileInView="visible"
-            whileHover="hover"
-            viewport={{ once: true }}
-          >
-            <img
-              src={clockIcon}
-              alt="Clock Icon"
-              className="block mx-auto mb-4 bg-white p-4 rounded-full w-16 h-16"
-            />
-            <h3 className="font-semibold text-xl text-white">Working Hours</h3>
-            <p className="text-white text-base mt-2">Mon-Sat: 9 AM - 6 PM</p>
-          </motion.div>
-        </div>
+       
 
         {/* Call to Action */}
         {/* <motion.div

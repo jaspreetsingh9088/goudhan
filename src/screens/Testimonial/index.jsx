@@ -7,6 +7,33 @@ import 'swiper/css/navigation';
 import client from '../../assets/client.png';
 import star from '../../assets/star.svg';
 
+const reviews = [
+  {
+    name: 'Debashish Bhuyan',
+    date: '2 days ago',
+    rating: 5,
+    message: 'High-quality cow product, easy to use, improves health, great value—highly recommended!',
+  },
+  {
+    name: 'Anita Sharma',
+    date: '1 week ago',
+    rating: 4,
+    message: 'Good results. My cows are more active now. Will purchase again.',
+  },
+  {
+    name: 'Ravi Kumar',
+    date: '3 days ago',
+    rating: 5,
+    message: 'Top-notch quality and fast delivery. Very satisfied with this product.',
+  },
+  {
+    name: 'Sunita Patel',
+    date: '5 days ago',
+    rating: 4,
+    message: 'Nice product and packaging. Saw improvement in milk production.',
+  },
+];
+
 const Testimonial = () => {
   return (
     <section className='customer-review bg-[#fff7f2] py-15 pb-18'>
@@ -39,26 +66,22 @@ const Testimonial = () => {
           }}
           className='mt-10'
         >
-          {[1, 2, 3, 4].map((_, index) => (
+          {reviews.map((review, index) => (
             <SwiperSlide key={index}>
               <div className='bg-white p-6 h-full shadow-lg'>
                 <div className='grid grid-cols-1 xl:grid-cols-4 gap-5'>
                   <div>
-                    <img src={client} alt='' className='w-[143px] block m-auto' />
+                    <img src={client} alt='client' className='w-[143px] block m-auto' />
                   </div>
                   <div className='col-span-3'>
-                    <h4 className='text-[20px] font-medium'>Sahil Gaushala</h4>
-                    <p className='text-[#9c9c9c]'>2 days ago</p>
+                    <h4 className='text-[20px] font-medium'>{review.name}</h4>
+                    <p className='text-[#9c9c9c]'>{review.date}</p>
                     <div className='flex gap-2 my-3'>
-                      {Array.from({ length: 5 }).map((_, i) => (
+                      {Array.from({ length: review.rating }).map((_, i) => (
                         <img key={i} src={star} alt='star' />
                       ))}
                     </div>
-                    <p>
-                      Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-                      Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
-                      when an unknown printer took...
-                    </p>
+                    <p>{review.message}</p>
                   </div>
                 </div>
               </div>

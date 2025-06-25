@@ -54,7 +54,7 @@ const Navbar = () => {
     const user = localStorage.getItem('user');
     if (token && user) {
       const roleId = JSON.parse(user).role_id;
-      navigate(roleId == 2 ? '/seller' : '/dashboard');
+      navigate(roleId === 2 ? '/seller' : '/dashboard');
     } else {
       navigate('/Login');
     }
@@ -64,8 +64,8 @@ const Navbar = () => {
 
   return (
     <div style={{ fontFamily: '"Plus Jakarta Sans", "Noto Sans", sans-serif' }}>
-      {/* Top Header */}
-      <section className="bg-[#4D953E] p-1">
+      {/* Top Contact Bar */}
+      {/* <section className="bg-[#4D953E] p-1">
         <div className="max-w-screen-xl mx-auto px-8">
           <div className="grid grid-cols-1 xl:grid-cols-2">
             <div className="flex gap-5 items-center text-white text-sm">
@@ -99,75 +99,119 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
-      {/* Main Nav */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-screen-xl flex items-center justify-between mx-auto px-8 py-4">
-          <Link to="/" className="flex items-center">
+      {/* Main Navbar */}
+      <header className="flex items-center justify-between border-b border-[#f4f2f1] px-10 py-3 bg-white relative">
+        {/* Logo + Name */}
+        <div className="flex items-center gap-4 text-[#171412]">
+          <div className="size-4">
+            {/* <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z"
+                fill="currentColor"
+              />
+            </svg> */}
+          </div>
+           <Link to="/" className="flex items-center">
             <img src={goudhanlogo} alt="Goudhan Logo" className="w-[168px]" />
           </Link>
-
-          {/* Right Icons */}
-          <div className="flex items-center gap-5 md:order-2">
-            <Link to="/cart">
-              <div className="relative">
-                <img src={cart} alt="Cart" className="w-6 h-6" />
-              {cartItems > 0 && (
-  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full px-1 animate-pulse shadow-md">
-    {cartItems}
-  </span>
-)}
-
-              </div>
-            </Link>
-            <img src={search} alt="Search" className="w-5 h-5" />
-
-            {/* Mobile Menu Toggle */}
-            <button
-              type="button"
-              className="md:hidden text-gray-700 hover:text-black"
-              onClick={toggleMenu}
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
-
-          {/* Menu Links */}
-         
-         <div
-  className={`${
-    isMenuOpen ? 'block' : 'hidden'
-  } w-full md:flex md:w-auto md:order-1 transition-all duration-300`}
->
-  <ul className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 p-4 md:p-0 mt-4 md:mt-0 bg-gray-50 md:bg-white rounded-lg md:rounded-none font-medium text-[#171412] tracking-tight">
-    {[
-      { label: "Home", to: "/" },
-      { label: "About", to: "/AboutUs" },
-      { label: "Blogs", to: "#" },
-      { label: "Our Products", to: "/OurProducts" },
-      { label: "Contact Us", to: "/ContactUs" },
-    ].map((item, index) => (
-      <li key={index}>
-        <Link
-          to={item.to}
-          className="block relative py-2 px-1 transition duration-200 hover:text-[#F48643] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 hover:after:w-full after:bg-[#F48643] after:transition-all after:duration-300"
-        >
-          {item.label}
-        </Link>
-      </li>
-    ))}
-  </ul>
-</div>
-
         </div>
-      </nav>
+
+        {/* Desktop Menu */}
+        <nav className="hidden md:flex items-center gap-9 text-sm font-medium text-[#171412]">
+          <Link to="/">Home</Link>
+          <Link to="/OurProducts">Products</Link>
+          <Link to="/AboutUs">About Us</Link>
+          <Link to="/ContactUs">Contact</Link>
+        </nav>
+
+        {/* Actions */}
+        <div className="flex gap-2 items-center">
+          {isAuthenticated ? (
+            <button
+              onClick={handleLoginClick}
+              className="hidden md:flex h-10 min-w-[84px] px-4 items-center justify-center rounded-xl bg-[#f3e3d7] text-sm font-bold tracking-[0.015em] text-[#171412]"
+            >
+              My Account
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate('/signup')}
+                className="hidden md:flex h-10 min-w-[84px] px-4 items-center justify-center rounded-xl bg-[#f3e3d7] text-sm font-bold tracking-[0.015em] text-[#171412]"
+              >
+                Register
+              </button>
+              <button
+                onClick={() => navigate('/Login')}
+                className="hidden md:flex h-10 min-w-[84px] px-4 items-center justify-center rounded-xl bg-[#f4f2f1] text-sm font-bold tracking-[0.015em] text-[#171412]"
+              >
+                Login
+              </button>
+            </>
+          )}
+
+          <Link to="/cart" className="relative flex items-center justify-center h-10 px-2.5 rounded-xl bg-[#f4f2f1]">
+            <img src={cart} alt="Cart" className="w-5 h-5" />
+            {cartItems > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold rounded-full px-1">
+                {cartItems}
+              </span>
+            )}
+          </Link>
+
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            className="md:hidden text-gray-700 hover:text-black ml-2"
+            onClick={toggleMenu}
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {isMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile Nav */}
+        {isMenuOpen && (
+          <div className="absolute top-full left-0 w-full bg-white shadow-md md:hidden z-20">
+            <nav className="flex flex-col text-sm font-medium text-[#171412] px-6 py-4">
+              <Link to="/" className="py-2 border-b" onClick={() => setIsMenuOpen(false)}>Home</Link>
+              <Link to="/OurProducts" className="py-2 border-b" onClick={() => setIsMenuOpen(false)}>Products</Link>
+              <Link to="/AboutUs" className="py-2 border-b" onClick={() => setIsMenuOpen(false)}>About Us</Link>
+              <Link to="/ContactUs" className="py-2" onClick={() => setIsMenuOpen(false)}>Contact</Link>
+
+              {!isAuthenticated && (
+                <>
+                  <button
+                    onClick={() => {
+                      navigate('/Login');
+                      setIsMenuOpen(false);
+                    }}
+                    className="py-2 border-t text-left"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/signup');
+                      setIsMenuOpen(false);
+                    }}
+                    className="py-2 text-left"
+                  >
+                    Register
+                  </button>
+                </>
+              )}
+            </nav>
+          </div>
+        )}
+      </header>
     </div>
   );
 };
