@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2'; 
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -8,8 +9,35 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [userReview, setUserReview] = useState({ rating: 0, comment: '' });
+    const [userRole, setUserRole] = useState(null);
+
   const navigate = useNavigate();
 
+    // Fetch user role
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await fetch('https://goudhan.life/admin/api/user', {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const data = await response.json();
+          console.log('Role ID', data);
+          // if (data.success) {
+             setUserRole(data.role_id);
+          // }
+        } catch (error) {
+          console.error('Failed to fetch user role:', error);
+        }
+      }
+    };
+    fetchUserRole();
+  }, []);
+  
   // Fetch product details
   useEffect(() => {
     const fetchProduct = async () => {
@@ -71,15 +99,33 @@ const ProductDetail = () => {
     }
   };
 
-  // Handle add to cart
   const handleAddToCart = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please log in to add products to your cart.');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Login Required',
+        text: 'Please log in to add products to your cart.',
+        confirmButtonColor: '#f97316',
+      });
+      return;
+    }
+    if (userRole == 2) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Action Not Allowed',
+        text: 'Sellers cannot add products to cart. Please create a buyer account to proceed.',
+        confirmButtonColor: '#f97316',
+      });
       return;
     }
     if (!product || quantity < 1) {
-      alert('Invalid product or quantity');
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid Input',
+        text: 'Invalid product or quantity.',
+        confirmButtonColor: '#f97316',
+      });
       return;
     }
     const total_price = (parseFloat(product.selling_price) * quantity).toFixed(2);
@@ -101,11 +147,21 @@ const ProductDetail = () => {
       if (data.success) {
         navigate('/cart');
       } else {
-        alert(data.message || 'Failed to add product to cart');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: data.message || 'Failed to add product to cart',
+          confirmButtonColor: '#f97316',
+        });
       }
     } catch (error) {
       console.error('Error adding product to cart:', error);
-      alert('An error occurred. Please try again.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred. Please try again.',
+        confirmButtonColor: '#f97316',
+      });
     }
   };
 
@@ -216,7 +272,7 @@ const ProductDetail = () => {
 
             <div className="flex items-center gap-4">
               <p className="text-2xl font-semibold text-gray-900">₹{parseFloat(product.selling_price).toFixed(2)}</p>
-              <p className="text-xl text-gray-500 line-through">₹{parseFloat(product.marked_price).toFixed(2)}</p>
+              <p className="text-xl text-gray-500 line-through">₹{parseFloat(product.admin_mrp_price).toFixed(2)}</p>
             </div>
 
             <p className="text-gray-600 leading-relaxed">{product.description}</p>

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
 import { auth } from '../../components/firebase-config';
 import loginImage from '../../assets/836047.jpg';
+import { useAuth } from '../../contexts/AuthContext'; // ✅ added line
 
 const Login = () => {
   const [mode, setMode] = useState('email');
@@ -14,6 +15,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState(null);
   const navigate = useNavigate();
+    const { login } = useAuth(); // ✅ added line
 
   // Handle input changes for email or mobile credentials
   const handleChange = (e) => {
@@ -52,7 +54,9 @@ const setupRecaptcha = () => {
 
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // localStorage.setItem('user', JSON.stringify(response.data.user));
+        login(response.data.user); // ✅ added
+
         navigateBasedOnRole(response.data.user?.role_id);
       } else {
         setError(response.data.message || 'Login failed');
@@ -103,7 +107,9 @@ const setupRecaptcha = () => {
 
       if (response.data.status && response.data.token) {
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // localStorage.setItem('user', JSON.stringify(response.data.user));
+        login(response.data.user); // ✅ added
+
         navigateBasedOnRole(response.data.user?.role_id);
       } else {
         setError(response.data.error || 'Login failed');

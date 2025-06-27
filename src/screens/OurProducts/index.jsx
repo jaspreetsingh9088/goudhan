@@ -113,7 +113,7 @@ const filteredCategories = categories.filter(cat =>
 );
 
 const [currentPage, setCurrentPage] = useState(1);
-const productsPerPage = 8;
+const productsPerPage = 9;
 
 
 const indexOfLastProduct = currentPage * productsPerPage;
@@ -274,7 +274,7 @@ useEffect(() => {
                               <p className='text-[18px]'>₹{product.price}</p>
                               <p className='text-[#F48643] text-[18px]'><del>₹{product.mprice}</del></p>
                             </div>
-                            <div className='flex items-center gap-1'>
+                            {/* <div className='flex items-center gap-1'>
                               <img
                                 src={cart}
                                 alt='Add to Cart'
@@ -282,7 +282,7 @@ useEffect(() => {
                                 className='hover:scale-150 duration-200 cursor-pointer'
                               />
                               <p>Cart</p>
-                            </div>
+                            </div> */}
                           </div>
                         </div>
                       </div>

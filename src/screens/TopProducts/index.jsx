@@ -87,14 +87,14 @@ const TopProducts = () => {
                           <p className="text-lg sm:text-xl font-bold text-black font-poppins">₹{product.selling_price}</p>
                           <del className="text-sm text-black/60 font-poppins">₹{product.admin_mrp_price}</del>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-black font-poppins cursor-pointer group-hover:text-[#F48743] transition-colors duration-200">
+                        {/* <div className="flex items-center gap-2 text-sm text-black font-poppins cursor-pointer group-hover:text-[#F48743] transition-colors duration-200">
                           <img
                             src={cart}
                             alt="Add to Cart"
                             className="w-6 h-6 group-hover:scale-110 transition-transform duration-200"
                           />
                           <span className="font-semibold">Add to Cart</span>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   </div>

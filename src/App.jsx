@@ -1,6 +1,7 @@
 import React from 'react';
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import Navbar from './screens/INC/Navbar';
 import Footer from './screens/INC/Footer';
 import Banner from './screens/Banner';
@@ -25,52 +26,50 @@ import PaymentSuccess from './screens/PaymentSuccess';
 import Seller from './screens/Seller';
 import GoPoint from './screens/GoPoint';
 
+import { AuthProvider } from "./contexts/AuthContext"; // ✅ import AuthProvider
 
-
-
-
+// Home page section
 function Home() {
   return (
     <>
-    <Banner/>
-    <TopProducts/>
-    {/* <Pictures/> */}
-    {/* <VisitOur/> */}
-    <OurStory/>
-    {/* <OurPromises/> */}
-    {/* <LatestBlog/> */}
-    <Testimonial/>
-    {/* <Footerimage/> */}
-   
+      <Banner />
+      <TopProducts />
+      {/* <Pictures/> */}
+      {/* <VisitOur/> */}
+      <OurStory />
+      {/* <OurPromises/> */}
+      {/* <LatestBlog/> */}
+      <Testimonial />
+      {/* <Footerimage/> */}
     </>
   );
 }
 
+// Main App
 function App() {
   return (
-    <Router basename='/'>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/Login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/dashboard" element={<MyDashboard />} />
-        <Route path="/ContactUs" element={<ContactUs />} />
-        <Route path="/OurProducts" element={<OurProducts />} />
-        <Route path="/product/:slug" element={<ProductDetail />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/AboutUs" element={<AboutUs />} />
-        <Route path="/Checkout" element={<Checkout />} />
-        <Route path="/Seller" element={<Seller />} />
-        <Route path="/signup/:referralPhone?" element={<SignUp />} />
-        <Route path="/payment-success" element={<PaymentSuccess />} />
-        <Route path="/go-points" element={<GoPoint />} />
-
-
-
-      </Routes>
-      <Footer />
-    </Router>
+    <AuthProvider> {/* ✅ Wrap everything inside AuthProvider */}
+      <Router basename='/'>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/Login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/dashboard" element={<MyDashboard />} />
+          <Route path="/ContactUs" element={<ContactUs />} />
+          <Route path="/OurProducts" element={<OurProducts />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/AboutUs" element={<AboutUs />} />
+          <Route path="/Checkout" element={<Checkout />} />
+          <Route path="/Seller" element={<Seller />} />
+          <Route path="/signup/:referralPhone?" element={<SignUp />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/go-points" element={<GoPoint />} />
+        </Routes>
+        <Footer />
+      </Router>
+    </AuthProvider>
   );
 }
 
