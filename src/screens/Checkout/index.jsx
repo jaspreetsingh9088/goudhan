@@ -16,52 +16,56 @@ const Checkout = () => {
   const [useGoPoints, setUseGoPoints] = useState(false);
   const [goPointsToUse, setGoPointsToUse] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
-  const [isPinServiceable, setIsPinServiceable] = useState(null);
-  const [pinCheckMessage, setPinCheckMessage] = useState("");
-  // New state for lowest-priced courier
-  const [lowestCourier, setLowestCourier] = useState(null);
+  const [isPinServiceable, setIsPinServiceable] = useState(true);
+  const [itemShipping, setItemShipping] = useState({});
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
-      setPincode(parsedUser.pincode || "");
     }
 
     const token = localStorage.getItem("token");
+    const checkoutData = JSON.parse(localStorage.getItem("checkout_data"));
+    
+    if (checkoutData) {
+      setCartItems(checkoutData.items || []);
+      setTotalShipping(checkoutData.shipping || 0);
+      setPincode(checkoutData.userPincode || "");
+      
+      // Calculate shipping per item
+      const shippingDetails = {};
+      checkoutData.items.forEach(item => {
+        if (item.delivery_method === 'online' && item.courier) {
+          shippingDetails[item.product.id] = parseFloat(item.courier.rate) * item.quantity;
+        } else {
+          shippingDetails[item.product.id] = 0;
+        }
+      });
+      setItemShipping(shippingDetails);
+      
+      // Calculate totals
+      let sub = 0, cgstValue = 0, igstValue = 0;
+      checkoutData.items.forEach((item) => {
+        const price = parseFloat(item.product.selling_price) || 0;
+        const qty = item.quantity || 1;
+        const cgstP = parseFloat(item.product.cgst) || 0;
+        const sgstP = parseFloat(item.product.sgst) || 0;
+
+        sub += price * qty;
+        cgstValue += (price * cgstP / 100) * qty;
+        igstValue += (price * sgstP / 100) * qty;
+      });
+
+      setSubtotal(sub);
+      setCgst(cgstValue);
+      setIgst(igstValue);
+      setTotal(sub + checkoutData.shipping + cgstValue + igstValue);
+      setFinalAmount(sub + checkoutData.shipping + cgstValue + igstValue);
+    }
 
     if (token) {
-      axios
-        .get("https://goudhan.life/admin/api/cart", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {
-          const cartData = res.data.cart || [];
-          setCartItems(cartData);
-
-          let sub = 0, shipping = 0, cgstValue = 0, igstValue = 0;
-          cartData.forEach((item) => {
-            const price = parseFloat(item.product.selling_price) || 0;
-            const ship = parseFloat(item.product.shipping_charge) || 0;
-            const qty = item.quantity || 1;
-            const cgstP = parseFloat(item.product.cgst) || 0;
-            const sgstP = parseFloat(item.product.sgst) || 0;
-
-            sub += price * qty;
-            shipping += ship * qty;
-            cgstValue += (price * cgstP / 100) * qty;
-            igstValue += (price * sgstP / 100) * qty;
-          });
-
-          setSubtotal(sub);
-          setTotalShipping(shipping);
-          setCgst(cgstValue);
-          setIgst(igstValue);
-          setTotal(sub + shipping + cgstValue + igstValue);
-          setFinalAmount(sub + shipping + cgstValue + igstValue);
-        });
-
       axios.get("https://goudhan.life/admin/api/user", {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
@@ -69,51 +73,6 @@ const Checkout = () => {
       });
     }
   }, []);
-
-  // Check PIN code serviceability and find lowest-priced courier
-  useEffect(() => {
-    if (pincode.length === 6 && cartItems.length > 0) {
-      const token = localStorage.getItem("token");
-      const productId = cartItems[0]?.product?.id;
-
-      if (token && productId) {
-        axios
-          .post(
-            "https://goudhan.life/admin/api/shiprocket/serviceability",
-            { product_id: productId, pincode },
-            { headers: { Authorization: `Bearer ${token}` } }
-          )
-          .then((res) => {
-            const data = res.data;
-            if (data.status === 200 && data.data?.available_courier_companies?.length > 0) {
-              setIsPinServiceable(true);
-              setPinCheckMessage("Delivery available to this PIN code!");
-              // Find the courier with the lowest freight_charge
-              const couriers = data.data.available_courier_companies;
-              const lowest = couriers.reduce((min, courier) => {
-                const freight = parseFloat(courier.freight_charge);
-                return !min || freight < parseFloat(min.freight_charge) ? courier : min;
-              }, null);
-              setLowestCourier(lowest);
-            } else {
-              setIsPinServiceable(false);
-              setPinCheckMessage("Sorry, delivery is not available to this PIN code.");
-              setLowestCourier(null);
-            }
-          })
-          .catch((err) => {
-            console.error("PIN code check failed", err);
-            setIsPinServiceable(false);
-            setPinCheckMessage("Failed to check PIN code availability.");
-            setLowestCourier(null);
-          });
-      }
-    } else {
-      setIsPinServiceable(null);
-      setPinCheckMessage("");
-      setLowestCourier(null);
-    }
-  }, [pincode, cartItems]);
 
   const calculateFinalAmount = () => {
     let amount = total;
@@ -132,10 +91,6 @@ const Checkout = () => {
   }, [useGoPoints, goPointsToUse, total]);
 
   const handlePlaceOrder = async () => {
-    if (!isPinServiceable) {
-      return alert("Please enter a valid, serviceable PIN code.");
-    }
-
     if (useGoPoints && goPointsToUse > goPoints) {
       return alert("You don't have enough Go Points");
     }
@@ -161,10 +116,15 @@ const Checkout = () => {
         final_amount: amountToPay,
         items: cartItems.map(item => ({
           id: item.id,
-          delivery_method: item.delivery_method
-        })),
-        // Include the selected courier
-        courier_company_id: lowestCourier?.courier_company_id
+          delivery_method: item.delivery_method,
+          courier: item.courier
+            ? {
+                company_id: item.courier.courier_company_id,
+                name: item.courier.courier_name,
+                rate: item.courier.rate
+              }
+            : null
+        }))
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -188,6 +148,7 @@ const Checkout = () => {
                 headers: { Authorization: `Bearer ${token}` }
               });
 
+              localStorage.removeItem("checkout_data");
               setCartItems([]);
               window.location.href = "/payment-success";
             } catch {
@@ -205,6 +166,7 @@ const Checkout = () => {
         const razorpay = new window.Razorpay(options);
         razorpay.open();
       } else {
+        localStorage.removeItem("checkout_data");
         alert("Order placed successfully. Payment status: Pending");
         setCartItems([]);
         window.location.href = "/payment-success";
@@ -217,7 +179,7 @@ const Checkout = () => {
 
   return (
     <>
-      <div className="py-8 bg-[#9d9d9d1f] mb-12 border-[#4D953E]">
+      <div className="py-8 bg-[#9d9d9f1f] mb-12 border-[#4D953E]">
         <h1 className="text-[52px] text-center font-bold text-[#292929]">Checkout</h1>
       </div>
 
@@ -233,16 +195,9 @@ const Checkout = () => {
               <input 
                 type="text" 
                 value={pincode} 
-                onChange={(e) => setPincode(e.target.value)} 
-                placeholder="Enter 6-digit pincode"
-                maxLength={6}
-                className="w-full rounded p-2 border" 
+                readOnly
+                className="w-full rounded p-2 bg-gray-100" 
               />
-              {pinCheckMessage && (
-                <p className={`mt-1 ${isPinServiceable ? "text-green-600" : "text-red-600"}`}>
-                  {pinCheckMessage}
-                </p>
-              )}
             </div>
             
             <div className="border-t pt-4">
@@ -290,20 +245,30 @@ const Checkout = () => {
               const sgstP = parseFloat(item.product.sgst) || 0;
               const cgstAmt = (price * cgstP / 100) * qty;
               const sgstAmt = (price * sgstP / 100) * qty;
+              
               return (
                 <div key={item.id} className="bg-[#f3f4f6] px-5 py-3 rounded-lg mb-4">
                   <div className="flex justify-between">
                     <h3 className="font-bold text-[#4d953e]">{item.product.name}</h3>
                     <span className={`px-2 py-1 rounded text-xs ${
-                      item.delivery_method === "Online" ? "bg-blue-200 text-blue-800" :
-                      item.delivery_method === "Referral" ? "bg-purple-200 text-purple-800" :
+                      item.delivery_method === "online" ? "bg-blue-200 text-blue-800" :
+                      item.delivery_method === "referral" ? "bg-purple-200 text-purple-800" :
                       "bg-green-200 text-green-800"
                     }`}>
-                      {item.delivery_method}
+                      {item.delivery_method === "online" ? "Online Delivery" : 
+                       item.delivery_method === "referral" ? "Referral Delivery" : 
+                       "Store Pickup"}
                     </span>
                   </div>
                   <p>₹{price.toFixed(2)} × {qty} = ₹{(price * qty).toFixed(2)}</p>
-                  <p>Shipping: ₹{parseFloat(item.product.shipping_charge).toFixed(2)}</p>
+                  
+                  {/* Show courier details if online delivery */}
+                  {item.delivery_method === "online" && item.courier && (
+                    <p className="text-sm">
+                      Courier: {item.courier.courier_name} (₹{itemShipping[item.product.id]?.toFixed(2)})
+                    </p>
+                  )}
+                  
                   {cgstAmt > 0 && <p className="text-sm">CGST ({cgstP}%): ₹{cgstAmt.toFixed(2)}</p>}
                   {sgstAmt > 0 && <p className="text-sm">SGST ({sgstP}%): ₹{sgstAmt.toFixed(2)}</p>}
                 </div>
@@ -311,20 +276,22 @@ const Checkout = () => {
             })}
             <div className="border-t pt-4 space-y-1">
               <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
-              {lowestCourier && (
-                <div className="flex justify-between">
-                  <span>Shipping ({lowestCourier.courier_name})</span>
-                  <span>₹{parseFloat(lowestCourier.freight_charge).toFixed(2)}</span>
-                </div>
-              )}
+              
+              <div className="flex justify-between">
+                <span>Shipping:</span>
+                <span>₹{totalShipping.toFixed(2)}</span>
+              </div>
+              
               <div className="flex justify-between"><span>CGST</span><span>₹{cgst.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>SGST</span><span>₹{igst.toFixed(2)}</span></div>
+              
               {useGoPoints && (
                 <div className="flex justify-between text-green-600">
                   <span>Go Points Used</span>
                   <span>-₹{Math.min(goPointsToUse, goPoints, total).toFixed(2)}</span>
                 </div>
               )}
+              
               <div className="flex justify-between font-bold text-lg mt-2 border-t pt-2">
                 <span>Total</span>
                 <span>₹{finalAmount.toFixed(2)}</span>
@@ -332,12 +299,7 @@ const Checkout = () => {
             </div>
             <button 
               onClick={handlePlaceOrder} 
-              disabled={isPinServiceable === false || !pincode || pincode.length !== 6}
-              className={`w-full py-2 rounded mt-4 text-white ${
-                isPinServiceable === false || !pincode || pincode.length !== 6
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#f68540] hover:bg-[#e07636]"
-              }`}
+              className="w-full py-2 rounded mt-4 text-white bg-[#f68540] hover:bg-[#e07636]"
             >
               Place Order
             </button>

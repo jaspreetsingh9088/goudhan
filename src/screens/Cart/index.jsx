@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { FaTrashAlt, FaTruck, FaStore, FaUserFriends } from 'react-icons/fa';
+import { FaTrashAlt, FaTruck, FaStore, FaUserFriends, FaTimes } from 'react-icons/fa';
 import { useAuth } from "../../contexts/AuthContext";
 
 const AddToCart = () => {
@@ -11,9 +11,10 @@ const AddToCart = () => {
   const [showChargesPopup, setShowChargesPopup] = useState(null);
   const [selectedShipping, setSelectedShipping] = useState({});
   const [shippingCharges, setShippingCharges] = useState(0);
-const { user } = useAuth();
+  const [storePickupAvailability, setStorePickupAvailability] = useState({});
+  
+  const { user } = useAuth();
   const token = localStorage.getItem('token');
-  // const user = JSON.parse(localStorage.getItem('user'));
   const userId = user?.id;
 
   // Fetch cart data
@@ -50,6 +51,39 @@ const { user } = useAuth();
     setServiceabilityData(newServiceabilityData);
   };
 
+  // Check store pickup availability
+  const checkStorePickupAvailability = async () => {
+    const availability = {};
+    
+    for (const item of cartItems) {
+      try {
+        const sellerPincode = item.product?.user?.pincode;
+        
+        if (!sellerPincode || !user?.pincode) {
+          availability[item.product.id] = false;
+          continue;
+        }
+        
+        const response = await axios.post(
+          'https://goudhan.life/admin/api/check-distance',
+          { 
+            seller_pincode: sellerPincode,
+            user_pincode: user.pincode
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        // Check if distance is within 10km
+        availability[item.product.id] = response.data.distance <= 10;
+      } catch (error) {
+        console.error(`Error checking distance for product ${item.product.id}:`, error);
+        availability[item.product.id] = false;
+      }
+    }
+    
+    setStorePickupAvailability(availability);
+  };
+
   useEffect(() => {
     fetchCart();
   }, []);
@@ -57,6 +91,7 @@ const { user } = useAuth();
   useEffect(() => {
     if (cartItems.length > 0 && user?.pincode) {
       checkServiceability();
+      checkStorePickupAvailability();
     }
   }, [cartItems, user?.pincode]);
 
@@ -95,6 +130,15 @@ const { user } = useAuth();
             : item
         )
       );
+      
+      // Reset shipping selection when changing delivery method
+      if (method !== 'online') {
+        setSelectedShipping(prev => {
+          const newSelection = {...prev};
+          delete newSelection[productId];
+          return newSelection;
+        });
+      }
     } catch (error) {
       console.error('Error updating delivery method:', error);
     }
@@ -102,15 +146,29 @@ const { user } = useAuth();
 
   const handleProceedToCheckout = () => {
     const checkoutData = {
-      items: cartItems,
+      items: cartItems.map(item => ({
+        ...item,
+        // Store courier info for online delivery
+        courier: item.delivery_method === 'online' 
+          ? serviceabilityData[item.product.id]?.data?.available_courier_companies?.find(
+              c => c.courier_company_id === selectedShipping[item.product.id]
+            )
+          : null
+      })),
       total: cartTotal + shippingCharges,
-      shipping: shippingCharges
+      shipping: shippingCharges,
+      deliveryMethods: cartItems.reduce((acc, item) => {
+        acc[item.product.id] = item.delivery_method;
+        return acc;
+      }, {}),
+      shippingSelections: selectedShipping,
+      userPincode: user?.pincode
     };
     
     localStorage.setItem("checkout_data", JSON.stringify(checkoutData));
   };
 
-  // Calculate shipping charges
+  // Calculate shipping charges per item
   useEffect(() => {
     let charges = 0;
     
@@ -141,6 +199,7 @@ const { user } = useAuth();
   const renderDeliveryOptions = (item) => {
     const service = serviceabilityData[item.product.id] || {};
     const onlineAvailable = service?.data?.available_courier_companies?.length > 0;
+    const storeAvailable = storePickupAvailability[item.product.id] || false;
     
     const options = [
       {
@@ -153,7 +212,7 @@ const { user } = useAuth();
         id: 'nearest_store',
         label: 'Nearest Store Pickup',
         icon: <FaStore className="mr-2" />,
-        available: true // Always available for now
+        available: storeAvailable
       },
       {
         id: 'referral',
@@ -212,7 +271,14 @@ const { user } = useAuth();
     
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-lg w-full max-w-md">
+        <div className="bg-white p-6 rounded-lg w-full max-w-md relative">
+          <button 
+            onClick={() => setShowChargesPopup(null)}
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          >
+            <FaTimes />
+          </button>
+          
           <h3 className="text-xl font-bold mb-4">Shipping Options</h3>
           
           {couriers.length === 0 ? (
@@ -233,10 +299,13 @@ const { user } = useAuth();
                     name="shipping_option"
                     value={courier.courier_company_id}
                     checked={selected === courier.courier_company_id}
-                    onChange={() => setSelectedShipping(prev => ({
-                      ...prev, 
-                      [productId]: courier.courier_company_id
-                    }))}
+                    onChange={() => {
+                      setSelectedShipping(prev => ({
+                        ...prev, 
+                        [productId]: courier.courier_company_id
+                      }));
+                      setShowChargesPopup(null);
+                    }}
                     className="mr-3"
                   />
                   <div>
@@ -265,7 +334,7 @@ const { user } = useAuth();
 
   return (
     <>
-      <div className="py-8 bg-[#9d9d9d1f] mb-12">
+      <div className="py-8 bg-[#9d9d9f1f] mb-12">
         <h1 className="text-[52px] text-center font-bold text-[#292929]">Shopping Cart</h1>
         <nav className="text-center">
           <ol className="inline-flex items-center space-x-2 text-[#4D953E] font-medium text-lg">

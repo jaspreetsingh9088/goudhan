@@ -25,3 +25,9 @@ button.crop-btn {
 .shadow-tb {
 	box-shadow: 2px 2px 34px #0000007a;
 }
+
+
+.bg-white.p-6.rounded-lg.w-full.max-w-md {
+    height: 500px;
+    overflow: auto;
+}
