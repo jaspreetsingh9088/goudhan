@@ -51,49 +51,54 @@ const AddToCart = () => {
     setServiceabilityData(newServiceabilityData);
   };
 
-  // Check store pickup availability
-  const checkStorePickupAvailability = async () => {
-    const availability = {};
-    
-    for (const item of cartItems) {
-      try {
-        const sellerPincode = item.product?.user?.pincode;
-        
-        if (!sellerPincode || !user?.pincode) {
-          availability[item.product.id] = false;
-          continue;
-        }
-        
-        const response = await axios.post(
-          'https://goudhan.life/admin/api/check-distance',
-          { 
-            seller_pincode: sellerPincode,
-            user_pincode: user.pincode
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        
-        // Check if distance is within 10km
-        availability[item.product.id] = response.data.distance <= 10;
-      } catch (error) {
-        console.error(`Error checking distance for product ${item.product.id}:`, error);
+ const checkStorePickupAvailability = async () => {
+  const availability = {};
+
+  for (const item of cartItems) {
+    try {
+      const sellerPincode = item.product?.user?.pincode;
+      const buyerPincode = user?.pincode;
+
+      if (!sellerPincode || !buyerPincode) {
+        console.warn(`Missing pincode for product ${item.product.id}`);
         availability[item.product.id] = false;
+        continue;
       }
+
+      const response = await axios.post(
+        'https://goudhan.life/admin/api/check-distance',
+        {
+          seller_pincode: sellerPincode,
+          user_pincode: buyerPincode
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const isWithin10km = response.data.within_10km;
+      console.log(`Product ${item.product.id} is within 10km:`, isWithin10km);
+
+      availability[item.product.id] = isWithin10km;
+    } catch (error) {
+      console.error(`Error checking distance for product ${item.product.id}:`, error);
+      availability[item.product.id] = false;
     }
-    
-    setStorePickupAvailability(availability);
-  };
+  }
+
+  setStorePickupAvailability(availability);
+};
+
 
   useEffect(() => {
     fetchCart();
   }, []);
 
-  useEffect(() => {
-    if (cartItems.length > 0 && user?.pincode) {
-      checkServiceability();
-      checkStorePickupAvailability();
-    }
-  }, [cartItems, user?.pincode]);
+useEffect(() => {
+  if (cartItems.length > 0 && user && user.pincode) {
+    checkServiceability();
+    checkStorePickupAvailability();
+  }
+}, [cartItems, user]);
+
 
   const updateQuantity = (productId, quantity) => {
     axios.put(`https://goudhan.life/admin/api/cart/update/${productId}`, { quantity }, {
@@ -105,9 +110,11 @@ const AddToCart = () => {
 
   const removeFromCart = async (productId) => {
     try {
-      await axios.delete(`https://goudhan.life/admin/api/cart/${userId}/${productId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(
+  `https://goudhan.life/admin/api/cart/${userId}/${productId}`,
+  {},
+  { headers: { Authorization: `Bearer ${token}` } }
+);
       setCartItems(prev => prev.filter(item => item.product.id !== productId));
     } catch (error) {
       console.error(error);
@@ -194,44 +201,47 @@ const AddToCart = () => {
 
   // Check if referral option should be shown
   const showReferralOption = !!user?.referred_by;
+   // Render delivery options for a product
+const renderDeliveryOptions = (item) => {
+  const service = serviceabilityData[item.product.id] || {};
+  const onlineAvailable = service?.data?.available_courier_companies?.length > 0;
+  const storeAvailable = storePickupAvailability[item.product.id] || false;
+  const referralAvailable = showReferralOption;
 
-  // Render delivery options for a product
-  const renderDeliveryOptions = (item) => {
-    const service = serviceabilityData[item.product.id] || {};
-    const onlineAvailable = service?.data?.available_courier_companies?.length > 0;
-    const storeAvailable = storePickupAvailability[item.product.id] || false;
-    
-    const options = [
-      {
-        id: 'online',
-        label: 'Online',
-        icon: <FaTruck className="mr-2" />,
-        available: onlineAvailable
-      },
-      {
-        id: 'nearest_store',
-        label: 'Nearest Store Pickup',
-        icon: <FaStore className="mr-2" />,
-        available: storeAvailable
-      },
-      {
-        id: 'referral',
-        label: 'Referral Delivery',
-        icon: <FaUserFriends className="mr-2" />,
-        available: showReferralOption
-      }
-    ];
+  const options = [
+    {
+      id: 'online',
+      label: 'Online',
+      icon: <FaTruck className="mr-2" />,
+      available: onlineAvailable,
+      message: 'No courier service available to your area.',
+    },
+    {
+      id: 'nearest_store',
+      label: 'Nearest Store Pickup',
+      icon: <FaStore className="mr-2" />,
+      available: storeAvailable,
+      message: 'Not Available.',
+    },
+    {
+      id: 'referral',
+      label: 'Referral Delivery',
+      icon: <FaUserFriends className="mr-2" />,
+      available: referralAvailable,
+      message: 'Referral delivery option not available.',
+    }
+  ];
 
-    return (
-      <div className="space-y-2">
-        {options.map(option => (
-          option.available && (
+  return (
+    <div className="space-y-3">
+      {options.map(option => (
+        <div key={option.id}>
+          {option.available ? (
             <label 
-              key={option.id} 
               className={`flex items-center p-2 rounded cursor-pointer ${
                 item.delivery_method === option.id 
                   ? 'bg-green-100 border border-green-500' 
-                  : 'bg-gray-100'
+                  : 'bg-gray-100 border border-gray-200'
               }`}
             >
               <input
@@ -246,7 +256,7 @@ const AddToCart = () => {
                 {option.icon}
                 {option.label}
               </div>
-              
+
               {option.id === 'online' && item.delivery_method === 'online' && onlineAvailable && (
                 <button
                   type="button"
@@ -257,11 +267,19 @@ const AddToCart = () => {
                 </button>
               )}
             </label>
-          )
-        ))}
-      </div>
-    );
-  };
+          ) : (
+            <div className="flex items-center px-2 py-1 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
+              {option.icon}
+              <span className="ml-2 font-medium">{option.label}:</span>
+              <span className="ml-1">{option.message}</span>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 
   // Shipping charges popup
   const ShippingChargesPopup = ({ productId }) => {
