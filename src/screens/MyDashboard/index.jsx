@@ -36,7 +36,7 @@ const [expandedOrders, setExpandedOrders] = useState({});
   });
 
   const navigate = useNavigate();
-  const referralLink = `https://goudhan.life/signup/${userData?.phone_number}`;
+  const referralLink = `https://goudhan.com/signup/${userData?.phone_number}`;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -48,7 +48,7 @@ const [expandedOrders, setExpandedOrders] = useState({});
       }
 
       try {
-        const response = await axios.get('https://goudhan.life/admin/api/user', {
+        const response = await axios.get('https://goudhan.com/admin/api/user', {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
@@ -68,7 +68,7 @@ const [expandedOrders, setExpandedOrders] = useState({});
   if (!token) return;
 
   try {
-    const response = await axios.get('https://goudhan.life/admin/api/user-orders', {
+    const response = await axios.get('https://goudhan.com/admin/api/user-orders', {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
@@ -101,7 +101,7 @@ const handleLogout = async () => {
   try {
     if (token) {
       await axios.post(
-        'https://goudhan.life/admin/api/logout',
+        'https://goudhan.com/admin/api/logout',
         {},
         {
           headers: {
@@ -116,7 +116,8 @@ const handleLogout = async () => {
   } finally {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login');
+    window.location.href = '/login';
+
     setIsLoggingOut(false);
   }
 };
@@ -140,7 +141,7 @@ const handleLogout = async () => {
     if (userData.profile_image) {
       const imageUrl = userData.profile_image.startsWith('http')
         ? userData.profile_image
-        : `https://goudhan.life/admin/storage/app/public/${userData.profile_image}`;
+        : `https://goudhan.com/admin/storage/app/public/${userData.profile_image}`;
       setProfileImageUrl(imageUrl);
     } else {
       setProfileImageUrl(null);
@@ -179,7 +180,7 @@ const handleLogout = async () => {
         }
       }
 
-      const response = await fetch('https://goudhan.life/admin/api/user/update', {
+      const response = await fetch('https://goudhan.com/admin/api/user/update', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -656,7 +657,7 @@ const handleLogout = async () => {
                   authUser?.profile_image
                     ? authUser.profile_image.startsWith('http')
                       ? authUser.profile_image
-                      : `https://goudhan.life/admin/storage/app/public/${authUser.profile_image}`
+                      : `https://goudhan.com/admin/storage/app/public/${authUser.profile_image}`
                     : myprofile
                 }
                 alt="Profile"

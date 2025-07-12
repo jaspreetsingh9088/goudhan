@@ -66,7 +66,7 @@ const Checkout = () => {
     }
 
     if (token) {
-      axios.get("https://goudhan.life/admin/api/user", {
+      axios.get("https://goudhan.com/admin/api/user", {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
         setGoPoints(res.data.go_points || 0);
@@ -106,7 +106,7 @@ const Checkout = () => {
       const pointsToUse = useGoPoints ? Math.min(goPointsToUse, goPoints, total) : 0;
       const amountToPay = finalAmount;
 
-      const res = await axios.post("https://goudhan.life/admin/api/create-order", {
+      const res = await axios.post("https://goudhan.com/admin/api/create-order", {
         total,
         subtotal,
         shipping_charge: totalShipping,
@@ -139,7 +139,7 @@ const Checkout = () => {
           order_id: res.data.razorpay_order_id,
           handler: async function (response) {
             try {
-              await axios.post("https://goudhan.life/admin/api/verify-payment", {
+              await axios.post("https://goudhan.com/admin/api/verify-payment", {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,

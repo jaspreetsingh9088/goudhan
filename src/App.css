@@ -31,3 +31,6 @@ button.crop-btn {
     height: 500px;
     overflow: auto;
 }
+button.my-cursor {
+    cursor: pointer;
+}

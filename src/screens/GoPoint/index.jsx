@@ -8,7 +8,7 @@ const GoPoint = () => {
 
 
   useEffect(() => {
-  axios.get('https://goudhan.life/admin/api/go-points-details', {
+  axios.get('https://goudhan.com/admin/api/go-points-details', {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },

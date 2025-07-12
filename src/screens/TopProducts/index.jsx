@@ -11,7 +11,7 @@ const TopProducts = () => {
 
   useEffect(() => {
     axios
-      .get('https://goudhan.life/admin/api/products/latest')
+      .get('https://goudhan.com/admin/api/products/latest')
       .then((res) => {
         if (res.data.success) {
           setProducts(res.data.products);
@@ -65,7 +65,7 @@ const TopProducts = () => {
                     <div className="relative">
                       {product.images?.length > 0 ? (
                         <img
-                          src={`https://goudhan.life/admin/public/storage/${product.images[0].image_path}`}
+                          src={`https://goudhan.com/admin/public/storage/${product.images[0].image_path}`}
                           alt={product.name}
                           className="w-full h-[220px] sm:h-[250px] object-cover rounded-t-3xl transition-transform duration-500 group-hover:scale-105"
                           loading="lazy"

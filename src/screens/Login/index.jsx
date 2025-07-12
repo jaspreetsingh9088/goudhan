@@ -47,7 +47,7 @@ const setupRecaptcha = () => {
     setError('');
     setLoading(true);
     try {
-      const response = await axios.post('https://goudhan.life/admin/api/login', {
+      const response = await axios.post('https://goudhan.com/admin/api/login', {
         email: credentials.email,
         password: credentials.password,
       });
@@ -100,7 +100,7 @@ const setupRecaptcha = () => {
       const idToken = await credential.user.getIdToken();
 
       const response = await axios.post(
-        'https://goudhan.life/admin/api/firebase-login',
+        'https://goudhan.com/admin/api/firebase-login',
         {},
         { headers: { Authorization: `Bearer ${idToken}` } }
       );
@@ -121,11 +121,20 @@ const setupRecaptcha = () => {
     }
   };
 
+
+  
   // Navigate based on user role
-  const navigateBasedOnRole = (roleId) => {
-    const routes = { 1: '/dashboard', 2: '/Seller' };
-    navigate(routes[roleId] || '/dashboard');
-  };
+ const navigateBasedOnRole = (roleId) => {
+  const routes = { 1: '/dashboard', 2: '/Seller' };
+  const targetRoute = routes[roleId] || '/dashboard';
+
+  navigate(targetRoute);
+
+  // Delay reload slightly to ensure routing completes first
+  setTimeout(() => {
+    window.location.reload();
+  }, 100); // 100ms delay
+};
 
   // Switch login mode
   const switchMode = (newMode) => {

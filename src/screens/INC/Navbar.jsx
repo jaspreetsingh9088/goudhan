@@ -19,7 +19,7 @@ const Navbar = () => {
 
     const fetchSettings = async () => {
       try {
-        const response = await axios.get('https://goudhan.life/admin/api/settings', {
+        const response = await axios.get('https://goudhan.com/admin/api/settings', {
           headers: {
             ...(token && { Authorization: `Bearer ${token}` }),
             Accept: 'application/json',
@@ -34,7 +34,7 @@ const Navbar = () => {
     const fetchCart = async () => {
       if (!token) return;
       try {
-        const response = await axios.get('https://goudhan.life/admin/api/cart', {
+        const response = await axios.get('https://goudhan.com/admin/api/cart', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -129,23 +129,13 @@ const Navbar = () => {
         {/* Actions */}
         <div className="flex gap-2 items-center">
           {isAuthenticated ? (
-            <button
-              onClick={handleLoginClick}
-              className="hidden md:flex h-10 min-w-[84px] px-4 items-center justify-center rounded-xl bg-[#f3e3d7] text-sm font-bold tracking-[0.015em] text-[#171412]"
-            >
-              My Account
-            </button>
+            <button onClick={handleLoginClick} className="my-cursor hidden md:flex h-10 min-w-[84px] px-4 items-center justify-center rounded-xl bg-[#f3e3d7] text-sm font-bold tracking-[0.015em] text-[#171412]">My Account</button>
           ) : (
             <>
-              <button
-                onClick={() => navigate('/signup')}
-                className="hidden md:flex h-10 min-w-[84px] px-4 items-center justify-center rounded-xl bg-[#f3e3d7] text-sm font-bold tracking-[0.015em] text-[#171412]"
-              >
-                Register
-              </button>
+              <button onClick={() => navigate('/signup')} className="my-cursor hidden md:flex h-10 min-w-[84px] px-4 items-center justify-center rounded-xl bg-[#f3e3d7] text-sm font-bold tracking-[0.015em] text-[#171412]">Register</button>
               <button
                 onClick={() => navigate('/Login')}
-                className="hidden md:flex h-10 min-w-[84px] px-4 items-center justify-center rounded-xl bg-[#f4f2f1] text-sm font-bold tracking-[0.015em] text-[#171412]"
+                className="my-cursor hidden md:flex h-10 min-w-[84px] px-4 items-center justify-center rounded-xl bg-[#f4f2f1] text-sm font-bold tracking-[0.015em] text-[#171412]"
               >
                 Login
               </button>

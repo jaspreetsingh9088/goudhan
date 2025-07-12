@@ -34,7 +34,7 @@ const LatestBlog = () => {
   const [blogs, setBlogs] = useState([]);
 
   useEffect(() => {
-    fetch('https://goudhan.life/admin/api/blogs')
+    fetch('https://goudhan.com/admin/api/blogs')
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -88,7 +88,7 @@ const LatestBlog = () => {
               {/* Blog Image */}
               <div className="relative">
                 <img
-                  src={`https://goudhan.life/admin/public/uploads/blogs/${blog.image}`}
+                  src={`https://goudhan.com/admin/public/uploads/blogs/${blog.image}`}
                   alt={blog.title}
                   className="w-full h-56 object-cover"
                   onError={(e) => {

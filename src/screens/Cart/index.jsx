@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { FaTrashAlt, FaTruck, FaStore, FaUserFriends, FaTimes } from 'react-icons/fa';
+// import { FaTrashAlt, FaTruck, FaStore, FaUserFriends, FaTimes } from 'react-icons/fa';
 import { useAuth } from "../../contexts/AuthContext";
+import { FaShoppingCart, FaTrashAlt, FaTruck, FaStore, FaUserFriends, FaTimes } from 'react-icons/fa';
 
 const AddToCart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -19,7 +20,7 @@ const AddToCart = () => {
 
   // Fetch cart data
   const fetchCart = () => {
-    axios.get('https://goudhan.life/admin/api/cart', {
+    axios.get('https://goudhan.com/admin/api/cart', {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(response => {
@@ -36,7 +37,7 @@ const AddToCart = () => {
     for (const item of cartItems) {
       try {
         const response = await axios.post(
-          'https://goudhan.life/admin/api/shiprocket/serviceability',
+          'https://goudhan.com/admin/api/shiprocket/serviceability',
           { product_id: item.product.id, pincode: user.pincode },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -66,7 +67,7 @@ const AddToCart = () => {
       }
 
       const response = await axios.post(
-        'https://goudhan.life/admin/api/check-distance',
+        'https://goudhan.com/admin/api/check-distance',
         {
           seller_pincode: sellerPincode,
           user_pincode: buyerPincode
@@ -99,9 +100,21 @@ useEffect(() => {
   }
 }, [cartItems, user]);
 
+useEffect(() => {
+  if (cartItems.length > 0 && user?.referred_by) {
+    cartItems.forEach(item => {
+      const productId = item.product.id;
+
+      // If delivery_method is not set yet, assign 'referral' by default
+      if (!item.delivery_method) {
+        updateDeliveryMethod(productId, 'referral');
+      }
+    });
+  }
+}, [cartItems, user]);
 
   const updateQuantity = (productId, quantity) => {
-    axios.put(`https://goudhan.life/admin/api/cart/update/${productId}`, { quantity }, {
+    axios.put(`https://goudhan.com/admin/api/cart/update/${productId}`, { quantity }, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(() => fetchCart())
@@ -111,7 +124,7 @@ useEffect(() => {
   const removeFromCart = async (productId) => {
     try {
       await axios.post(
-  `https://goudhan.life/admin/api/cart/${userId}/${productId}`,
+  `https://goudhan.com/admin/api/cart/${userId}/${productId}`,
   {},
   { headers: { Authorization: `Bearer ${token}` } }
 );
@@ -123,33 +136,45 @@ useEffect(() => {
   };
 
   const updateDeliveryMethod = async (productId, method) => {
-    try {
-      await axios.post(
-        'https://goudhan.life/admin/api/cart/update-delivery-method',
-        { product_id: productId, delivery_method: method },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      setCartItems(prev =>
-        prev.map(item =>
-          item.product.id === productId
-            ? { ...item, delivery_method: method }
-            : item
-        )
-      );
-      
-      // Reset shipping selection when changing delivery method
-      if (method !== 'online') {
-        setSelectedShipping(prev => {
-          const newSelection = {...prev};
-          delete newSelection[productId];
-          return newSelection;
-        });
+  try {
+    await axios.post(
+      'https://goudhan.com/admin/api/cart/update-delivery-method',
+      { product_id: productId, delivery_method: method },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setCartItems(prev =>
+      prev.map(item =>
+        item.product.id === productId
+          ? { ...item, delivery_method: method }
+          : item
+      )
+    );
+
+    // Automatically select first courier when online is selected
+    if (method === 'online') {
+      const couriers = serviceabilityData[productId]?.data?.available_courier_companies;
+      if (couriers && couriers.length > 0) {
+        const firstCourierId = couriers[0].courier_company_id;
+
+        setSelectedShipping(prev => ({
+          ...prev,
+          [productId]: firstCourierId
+        }));
       }
-    } catch (error) {
-      console.error('Error updating delivery method:', error);
+    } else {
+      // Remove selected courier if switching from online to other method
+      setSelectedShipping(prev => {
+        const newSelection = { ...prev };
+        delete newSelection[productId];
+        return newSelection;
+      });
     }
-  };
+  } catch (error) {
+    console.error('Error updating delivery method:', error);
+  }
+};
+
 
   const handleProceedToCheckout = () => {
     const checkoutData = {
@@ -203,10 +228,25 @@ useEffect(() => {
   const showReferralOption = !!user?.referred_by;
    // Render delivery options for a product
 const renderDeliveryOptions = (item) => {
-  const service = serviceabilityData[item.product.id] || {};
-  const onlineAvailable = service?.data?.available_courier_companies?.length > 0;
-  const storeAvailable = storePickupAvailability[item.product.id] || false;
+  
+  const productId = item.product.id;
+  const service = serviceabilityData[productId] || {};
+  const courierCompanies = service?.data?.available_courier_companies || [];
+  const onlineAvailable = courierCompanies.length > 0;
+  const storeAvailable = storePickupAvailability[productId] || false;
   const referralAvailable = showReferralOption;
+
+const userPincode = user?.pincode;
+  let pincodeMessage = '';
+
+  if (!onlineAvailable) {
+    if (!userPincode) {
+      pincodeMessage = 'Please add your pincode in your profile.';
+    } else {
+      pincodeMessage = 'Delivery service is not available in your area.';
+    }
+  }
+
 
   const options = [
     {
@@ -214,15 +254,15 @@ const renderDeliveryOptions = (item) => {
       label: 'Online',
       icon: <FaTruck className="mr-2" />,
       available: onlineAvailable,
-      message: 'No courier service available to your area.',
+      message: pincodeMessage,
     },
-    {
-      id: 'nearest_store',
-      label: 'Nearest Store Pickup',
-      icon: <FaStore className="mr-2" />,
-      available: storeAvailable,
-      message: 'Not Available.',
-    },
+    // {
+    //   id: 'nearest_store',
+    //   label: 'Nearest Store Pickup',
+    //   icon: <FaStore className="mr-2" />,
+    //   available: storeAvailable,
+    //   message: 'Not Available.',
+    // },
     {
       id: 'referral',
       label: 'Referral Delivery',
@@ -366,7 +406,20 @@ const renderDeliveryOptions = (item) => {
       <div className="max-w-7xl mx-auto px-6 py-10">
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
           {/* CART TABLE */}
-          <div className="col-span-3 overflow-x-auto">
+        <div className="col-span-3 overflow-x-auto">
+  {cartItems.length === 0 ? (
+    <div className="flex flex-col items-center justify-center py-20 bg-white border border-gray-200 rounded-lg shadow-sm">
+      <FaShoppingCart className="text-6xl text-gray-400 mb-4" />
+      <h2 className="text-xl font-semibold text-gray-600">Your cart is empty</h2>
+      <p className="text-gray-500 mt-2">Looks like you haven't added anything yet.</p>
+      <Link 
+        to="/Ourproducts"
+        className="mt-6 inline-block bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition"
+      >
+        Browse Products
+      </Link>
+    </div>
+  ) : (
             <table className="min-w-full text-left bg-white border border-gray-200 shadow-sm">
               <thead>
                 <tr className="text-white bg-orange-500">
@@ -391,7 +444,7 @@ const renderDeliveryOptions = (item) => {
                         <img
                           src={
                             item.product?.images?.[0]?.image_path
-                              ? `https://goudhan.life/admin/storage/app/public/${item.product.images[0].image_path}`
+                              ? `https://goudhan.com/admin/storage/app/public/${item.product.images[0].image_path}`
                               : 'https://via.placeholder.com/150'
                           }
                           alt={item.product?.name}
@@ -437,9 +490,11 @@ const renderDeliveryOptions = (item) => {
                 })}
               </tbody>
             </table>
-          </div>
+         )}
+</div>
 
           {/* CART SUMMARY */}
+          {cartItems.length > 0 && (
           <div className="col-span-1 border border-gray-300 p-5 rounded-lg bg-white shadow-sm">
             <h2 className="text-xl font-bold mb-4 text-white bg-green-600 rounded-md px-4 py-2">
               Order Summary
@@ -477,6 +532,7 @@ const renderDeliveryOptions = (item) => {
               Continue Shopping
             </Link>
           </div>
+          )}
         </div>
       </div>
 

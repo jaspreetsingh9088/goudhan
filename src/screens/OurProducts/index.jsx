@@ -17,7 +17,7 @@ const OurProducts = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('https://goudhan.life/admin/api/products')
+    fetch('https://goudhan.com/admin/api/products')
       .then(res => res.json())
       .then(data => {
         if (data.success) {

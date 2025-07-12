@@ -15,7 +15,7 @@ const ContactUs = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await axios.get('https://goudhan.life/admin/api/settings');
+        const response = await axios.get('https://goudhan.com/admin/api/settings');
         if (response.data.success) {
           setSettings(response.data.data);
         }

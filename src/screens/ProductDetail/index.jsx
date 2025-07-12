@@ -19,7 +19,7 @@ const ProductDetail = () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await fetch('https://goudhan.life/admin/api/user', {
+          const response = await fetch('https://goudhan.com/admin/api/user', {
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
@@ -42,7 +42,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://goudhan.life/admin/api/product/${slug}`);
+        const response = await fetch(`https://goudhan.com/admin/api/product/${slug}`);
         const data = await response.json();
         if (data.success) {
           setProduct(data.product);
@@ -59,7 +59,7 @@ const ProductDetail = () => {
   // Fetch related products
   const fetchRelatedProducts = async (categoryId) => {
     try {
-        const response = await fetch(`https://goudhan.life/admin/api/products/category/${categoryId}?limit=4`);
+        const response = await fetch(`https://goudhan.com/admin/api/products/category/${categoryId}?limit=4`);
         const data = await response.json();
         console.log('Related Products API Response:', data); // Debug log
         if (data.success) {
@@ -75,7 +75,7 @@ const ProductDetail = () => {
   // Fetch reviews
   const fetchReviews = async (productId) => {
     try {
-      const response = await fetch(`https://goudhan.life/admin/api/reviews/${productId}`);
+      const response = await fetch(`https://goudhan.com/admin/api/reviews/${productId}`);
       const data = await response.json();
       if (data.success) {
         setReviews(data.reviews);
@@ -135,7 +135,7 @@ const ProductDetail = () => {
       total_price: total_price,
     };
     try {
-      const response = await fetch('https://goudhan.life/admin/api/add-to-cart', {
+      const response = await fetch('https://goudhan.com/admin/api/add-to-cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ const ProductDetail = () => {
       return;
     }
     try {
-      const response = await fetch(`https://goudhan.life/admin/api/cart/update/${product.id}`, {
+      const response = await fetch(`https://goudhan.com/admin/api/cart/update/${product.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -206,7 +206,7 @@ const ProductDetail = () => {
         return;
     }
     try {
-        const response = await fetch(`https://goudhan.life/admin/api/reviews/${product.id}`, {
+        const response = await fetch(`https://goudhan.com/admin/api/reviews/${product.id}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ const ProductDetail = () => {
           {/* Product Image */}
           <div className="bg-white rounded-lg shadow-lg p-6 flex justify-center items-center">
             <img
-              src={`https://goudhan.life/admin/storage/app/public/${product.images[0]?.image_path}`}
+              src={`https://goudhan.com/admin/storage/app/public/${product.images[0]?.image_path}`}
               alt={product.name}
               className="w-full max-w-md object-contain rounded-lg transition-transform duration-300 hover:scale-105"
             />

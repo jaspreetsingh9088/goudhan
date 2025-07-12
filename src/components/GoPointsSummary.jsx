@@ -9,7 +9,7 @@ const GoPointsSummary = () => {
     const token = localStorage.getItem('token');
     if (!token) return setError("User not logged in");
 
-    axios.get('https://goudhan.life/admin/api/go-points-details', {
+    axios.get('https://goudhan.com/admin/api/go-points-details', {
       headers: { Authorization: `Bearer ${token}` },
       withCredentials: true,
     })
