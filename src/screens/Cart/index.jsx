@@ -177,27 +177,10 @@ useEffect(() => {
 
 
   const handleProceedToCheckout = () => {
-    const checkoutData = {
-      items: cartItems.map(item => ({
-        ...item,
-        // Store courier info for online delivery
-        courier: item.delivery_method === 'online' 
-          ? serviceabilityData[item.product.id]?.data?.available_courier_companies?.find(
-              c => c.courier_company_id === selectedShipping[item.product.id]
-            )
-          : null
-      })),
-      total: cartTotal + shippingCharges,
-      shipping: shippingCharges,
-      deliveryMethods: cartItems.reduce((acc, item) => {
-        acc[item.product.id] = item.delivery_method;
-        return acc;
-      }, {}),
-      shippingSelections: selectedShipping,
-      userPincode: user?.pincode
-    };
-    
-    localStorage.setItem("checkout_data", JSON.stringify(checkoutData));
+    localStorage.setItem("cart_data", JSON.stringify({
+      items: cartItems,
+      total: cartTotal
+    }));
   };
 
   // Calculate shipping charges per item
@@ -428,7 +411,7 @@ const userPincode = user?.pincode;
                   <th className="py-3 px-5">Price</th>
                   <th className="py-3 px-5">Quantity</th>
                   <th className="py-3 px-5">Total</th>
-                  <th className="py-3 px-5">Delivery Method</th>
+                  {/* <th className="py-3 px-5">Delivery Method</th> */}
                   <th className="py-3 px-5">Actions</th>
                 </tr>
               </thead>
@@ -473,9 +456,9 @@ const userPincode = user?.pincode;
                         />
                       </td>
                       <td className="py-4 px-5 font-medium">₹{total.toFixed(2)}</td>
-                      <td className="py-4 px-5">
-                        {renderDeliveryOptions(item)}
-                      </td>
+                      {/*  <td className="py-4 px-5">
+                       {renderDeliveryOptions(item)} 
+                      </td>*/}
                       <td className="py-4 px-5">
                         <button
                           onClick={() => removeFromCart(item.product.id)}
@@ -495,7 +478,7 @@ const userPincode = user?.pincode;
 
           {/* CART SUMMARY */}
           {cartItems.length > 0 && (
-          <div className="col-span-1 border border-gray-300 p-5 rounded-lg bg-white shadow-sm">
+        <div className="col-span-1 border border-gray-300 p-5 rounded-lg bg-white shadow-sm">
             <h2 className="text-xl font-bold mb-4 text-white bg-green-600 rounded-md px-4 py-2">
               Order Summary
             </h2>
@@ -506,10 +489,10 @@ const userPincode = user?.pincode;
                 <span>₹{cartTotal.toFixed(2)}</span>
               </div>
               
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <span>Shipping:</span>
                 <span>₹{shippingCharges.toFixed(2)}</span>
-              </div>
+              </div> */}
               
               <div className="border-t border-gray-300 pt-3 flex justify-between font-bold">
                 <span>Total:</span>
